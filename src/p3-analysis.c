@@ -51,6 +51,7 @@ void AnalysisData_free (AnalysisData* data)
  */
 #define DATA ((AnalysisData*)visitor->data)
 
+
 /**
  * @brief Macro for more convenient access to the error list inside a
  * @ref AnalysisVisitor data structure
@@ -85,6 +86,11 @@ Symbol* lookup_symbol_with_reporting(NodeVisitor* visitor, ASTNode* node, const 
  */
 #define GET_INFERRED_TYPE(N) (DecafType)ASTNode_get_attribute(N, "type")
 
+void AnalysisVisitor_check_vardecl (NodeVisitor* visitor, ASTNode* node) 
+{
+
+}
+
 ErrorList* analyze (ASTNode* tree)
 {
     /* allocate analysis structures */
@@ -93,6 +99,7 @@ ErrorList* analyze (ASTNode* tree)
     v->dtor = (Destructor)AnalysisData_free;
 
     /* BOILERPLATE: TODO: register analysis callbacks */
+    v->previsit_vardecl = AnalysisVisitor_check_vardecl;
 
     /* perform analysis, save error list, clean up, and return errors */
     NodeVisitor_traverse(v, tree);

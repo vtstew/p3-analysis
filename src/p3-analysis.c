@@ -123,7 +123,7 @@ void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
  */
 void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
 {
-    lookup_symbol_with_reporting(visitor, node, node->location.name) == NULL;
+    lookup_symbol_with_reporting(visitor, node, node->location.name); //== NULL
 }
 
 /**

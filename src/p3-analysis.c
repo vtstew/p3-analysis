@@ -87,6 +87,12 @@ Symbol *lookup_symbol_with_reporting(NodeVisitor *visitor, ASTNode *node, const 
  */
 #define GET_INFERRED_TYPE(N) (DecafType) ASTNode_get_attribute(N, "type")
 
+/**
+ * @brief check if there is a main method.
+ *
+ * @param visitor
+ * @param node
+ */
 void AnalysisVisitor_check_main_fun(NodeVisitor *visitor, ASTNode *node)
 {
     if (lookup_symbol(node, "main") == NULL)
@@ -95,6 +101,12 @@ void AnalysisVisitor_check_main_fun(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief check for void vardecls.
+ *
+ * @param visitor
+ * @param node
+ */
 void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
 {
     if (node->vardecl.type == VOID)
@@ -103,11 +115,23 @@ void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief check location symbol.
+ *
+ * @param visitor
+ * @param node
+ */
 void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
 {
     lookup_symbol_with_reporting(visitor, node, node->location.name) == NULL;
 }
 
+/**
+ * @brief set the infered type to the node literal type.
+ *
+ * @param visitor
+ * @param node
+ */
 void Analysis_literal_infer(NodeVisitor *visitor, ASTNode *node)
 {
     SET_INFERRED_TYPE(node->literal.type);

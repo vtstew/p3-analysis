@@ -179,9 +179,20 @@ void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
 
 void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 {
-    if (node->funcreturn.value->type == LOCATION) {
-        Error_throw_printf("\nheree\n");
-    } else if (node->funcreturn.value->type == LITERAL) 
+    if (node->funcreturn.value->type == LOCATION)
+    {
+        Symbol *type = lookup_symbol_with_reporting(visitor, node, node->funcreturn.value->location.name);
+        if (type == NULL)
+        {
+            AnalysisError* err = (AnalysisError*)calloc(1, sizeof(AnalysisError));
+            vsnprintf(err->message, MAX_ERROR_LEN, "Symbol '%s' undefined on line %d", (node->funcreturn.value->location.name, node->source_line));
+            ErrorList_add(DATA->errors, err);
+        }
+        if (type->type != DATA->funcdecl_return_type) {
+            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(type->type));
+        }
+
+    } else if (node->funcreturn.value->type == LITERAL)
     {
         if (node->funcreturn.value->literal.type != DATA->funcdecl_return_type)
         {

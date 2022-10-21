@@ -1,4 +1,0 @@
---- outputs/D_undefined_var.txt	2022-10-21 15:54:44.830778996 -0400
-+++ expected/D_undefined_var.txt	2022-10-19 11:41:47.000043479 -0400
-@@ -0,0 +1 @@
-+Symbol 'a' undefined on line 3

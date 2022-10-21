@@ -1,5 +1,6 @@
 Running suite(s): Default
-46%: Checks: 13, Failures: 5, Errors: 2
+38%: Checks: 13, Failures: 5, Errors: 3
+public.c:27:E:Public:D_invalid_undef_var:0: (after this point) Received signal 11 (Segmentation fault)
 public.c:29:F:Public:C_var_type_mismatch:0: Assertion 'invalid_program("int x; def int main() { x=false; return 0; }")' failed
 public.c:30:F:Public:C_invalid_conditional:0: Assertion 'invalid_program("def int main() { if (1) { return 0; } }")' failed
 public.c:31:F:Public:B_invalid_dup_var_global:0: Assertion 'invalid_program("def int main () { " "int a; bool b; int a; return 0;" " }")' failed

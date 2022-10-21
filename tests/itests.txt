@@ -1,4 +1,4 @@
-D_undefined_var                FAIL (timeout)
+D_undefined_var                pass
 B_add                          pass
 No memory leak found.
 ========================================

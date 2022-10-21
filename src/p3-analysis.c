@@ -15,6 +15,7 @@ typedef struct AnalysisData
      */
     ErrorList *errors;
     bool is_loop;
+    bool is_return;
     DecafType funcdecl_return_type;
 
     /* BOILERPLATE: TODO: add any new desired state information (and clean it up in AnalysisData_free) */
@@ -133,8 +134,16 @@ void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
  */
 void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
 {
+    if (DATA->is_return)
+    {
+        Symbol *sym = lookup_symbol(node, node->location.name);
+        
+        if (sym != NULL && sym->type != DATA->funcdecl_return_type)
+        {
+            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
+        }
+    }
     lookup_symbol_with_reporting(visitor, node, node->location.name); //== NULL
-
 }
 
 /**
@@ -179,18 +188,10 @@ void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
 
 void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 {
+    DATA->is_return = true;
     if (node->funcreturn.value->type == LOCATION)
     {
-        Symbol *type = lookup_symbol_with_reporting(visitor, node, node->funcreturn.value->location.name);
-        if (type == NULL)
-        {
-            AnalysisError* err = (AnalysisError*)calloc(1, sizeof(AnalysisError));
-            vsnprintf(err->message, MAX_ERROR_LEN, "Symbol '%s' undefined on line %d", (node->funcreturn.value->location.name, node->source_line));
-            ErrorList_add(DATA->errors, err);
-        }
-        if (type->type != DATA->funcdecl_return_type) {
-            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(type->type));
-        }
+        // do nothing and let previsit_location handle error
 
     } else if (node->funcreturn.value->type == LITERAL)
     {
@@ -199,6 +200,11 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
             Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type) );
         }
     }
+}
+
+void Analysis_postvisit_return(NodeVisitor *visitor, ASTNode *node)
+{
+    DATA->is_return = false;
 }
 
 
@@ -218,6 +224,7 @@ ErrorList *analyze(ASTNode *tree)
     v->previsit_break = Analysis_previsit_break;
     v->previsit_funcdecl = Analysis_previsit_funcdecl;
     v->previsit_return = Analysis_previsit_return;
+    v->postvisit_return = Analysis_postvisit_return;
     
     
 

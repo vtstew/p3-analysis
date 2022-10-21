@@ -1,0 +1,17 @@
+--- outputs/B_add.txt	2022-10-21 15:54:45.758787656 -0400
++++ expected/B_add.txt	2022-10-19 11:41:47.000043479 -0400
+@@ -0,0 +1,14 @@
++Program [line 1]
++SYM TABLE:
++ print_int : (int) -> void
++ print_bool : (bool) -> void
++ print_str : (str) -> void
++ main : () -> int
++
++  FuncDecl name="main" return_type=int parameters={} [line 1]
++  SYM TABLE:
++
++    Block [line 2]
++    SYM TABLE:
++     a : int
++

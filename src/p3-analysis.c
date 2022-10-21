@@ -14,6 +14,8 @@ typedef struct AnalysisData
      * @brief List of errors detected
      */
     ErrorList *errors;
+    bool is_loop;
+    DecafType funcdecl_return_type;
 
     /* BOILERPLATE: TODO: add any new desired state information (and clean it up in AnalysisData_free) */
 
@@ -97,7 +99,7 @@ void AnalysisVisitor_check_main_fun(NodeVisitor *visitor, ASTNode *node)
 {
     if (lookup_symbol(node, "main") == NULL)
     {
-        Error_throw_printf(ERROR_LIST, "Program does not contain a 'main' function");
+        Error_throw_printf("Program does not contain a 'main' function");
     }
 }
 
@@ -111,7 +113,15 @@ void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
 {
     if (node->vardecl.type == VOID)
     {
-        Error_throw_printf(ERROR_LIST, "Void variable '%s' on line %d", node->vardecl.name, node->source_line);
+        Error_throw_printf("Void variable '%s' on line %d", node->vardecl.name, node->source_line);
+    }
+
+    if (node->vardecl.is_array)
+    {
+        if (node->vardecl.array_length <= 0)
+        {
+            Error_throw_printf("Array length must be greater than 0");
+        }
     }
 }
 
@@ -124,6 +134,7 @@ void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
 void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
 {
     lookup_symbol_with_reporting(visitor, node, node->location.name); //== NULL
+
 }
 
 /**
@@ -137,6 +148,49 @@ void Analysis_literal_infer(NodeVisitor *visitor, ASTNode *node)
     SET_INFERRED_TYPE(node->literal.type);
 }
 
+void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
+{
+    DATA->is_loop = true;
+}
+
+void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
+{
+    DATA->is_loop = false;
+}
+
+void Analysis_previsit_break(NodeVisitor *visitor, ASTNode *node)
+{
+    if (!DATA->is_loop) {
+        Error_throw_printf("Break statement should be inside a while loop.");
+    }
+}
+
+void Analysis_previsit_continue(NodeVisitor *visitor, ASTNode *node)
+{
+    if (!DATA->is_loop) {
+        Error_throw_printf("Continue statement should be inside a while loop.");
+    }   
+}
+
+void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
+{
+    DATA->funcdecl_return_type = node->funcdecl.return_type;
+}
+
+void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
+{
+    if (node->funcreturn.value->type == LOCATION) {
+        Error_throw_printf("\nheree\n");
+    } else if (node->funcreturn.value->type == LITERAL) 
+    {
+        if (node->funcreturn.value->literal.type != DATA->funcdecl_return_type)
+        {
+            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type) );
+        }
+    }
+}
+
+
 ErrorList *analyze(ASTNode *tree)
 {
     /* allocate analysis structures */
@@ -149,6 +203,12 @@ ErrorList *analyze(ASTNode *tree)
     v->previsit_program = AnalysisVisitor_check_main_fun;
     v->previsit_location = AnalysisVisitor_check_location;
     v->previsit_literal = Analysis_literal_infer;
+    v->previsit_whileloop = Analysis_previsit_while_loop;
+    v->previsit_break = Analysis_previsit_break;
+    v->previsit_funcdecl = Analysis_previsit_funcdecl;
+    v->previsit_return = Analysis_previsit_return;
+    
+    
 
     // assign a tyoe to all the literals according to chart thing
 

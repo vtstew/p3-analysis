@@ -1,7 +1,7 @@
 /**
  * @file p3-analysis.c
  * @brief Compiler phase 3: static analysis
- * @name Vivian Stewart and Katie Brasachio
+ * @name Vivian Stewart and Katie Brasacchio
  */
 #include "p3-analysis.h"
 
@@ -108,6 +108,11 @@ void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
     lookup_symbol_with_reporting(visitor, node, node->location.name) == NULL;
 }
 
+void Analysis_literal_infer(NodeVisitor *visitor, ASTNode *node)
+{
+    SET_INFERRED_TYPE(node->literal.type);
+}
+
 ErrorList *analyze(ASTNode *tree)
 {
     /* allocate analysis structures */
@@ -116,9 +121,12 @@ ErrorList *analyze(ASTNode *tree)
     v->dtor = (Destructor)AnalysisData_free;
 
     /* BOILERPLATE: TODO: register analysis callbacks */
-    v->previsit_vardecl = &AnalysisVisitor_check_vardecl;
-    v->previsit_program = &AnalysisVisitor_check_main_fun;
-    v->previsit_location = &AnalysisVisitor_check_location;
+    v->previsit_vardecl = AnalysisVisitor_check_vardecl;
+    v->previsit_program = AnalysisVisitor_check_main_fun;
+    v->previsit_location = AnalysisVisitor_check_location;
+    v->previsit_literal = Analysis_literal_infer;
+
+    // assign a tyoe to all the literals according to chart thing
 
     /* perform analysis, save error list, clean up, and return errors */
     NodeVisitor_traverse(v, tree);

@@ -117,6 +117,7 @@ void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
         Error_throw_printf("Void variable '%s' on line %d", node->vardecl.name, node->source_line);
     }
 
+    // check for valid array size in declaration
     if (node->vardecl.is_array)
     {
         if (node->vardecl.array_length <= 0)
@@ -137,7 +138,7 @@ void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
     if (DATA->is_return)
     {
         Symbol *sym = lookup_symbol(node, node->location.name);
-        
+
         if (sym != NULL && sym->type != DATA->funcdecl_return_type)
         {
             Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
@@ -169,16 +170,18 @@ void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
 
 void Analysis_previsit_break(NodeVisitor *visitor, ASTNode *node)
 {
-    if (!DATA->is_loop) {
+    if (!DATA->is_loop)
+    {
         Error_throw_printf("Break statement should be inside a while loop.");
     }
 }
 
 void Analysis_previsit_continue(NodeVisitor *visitor, ASTNode *node)
 {
-    if (!DATA->is_loop) {
+    if (!DATA->is_loop)
+    {
         Error_throw_printf("Continue statement should be inside a while loop.");
-    }   
+    }
 }
 
 void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
@@ -192,13 +195,26 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
     if (node->funcreturn.value->type == LOCATION)
     {
         // do nothing and let previsit_location handle error
-
-    } else if (node->funcreturn.value->type == LITERAL)
+    }
+    else if (node->funcreturn.value->type == LITERAL)
     {
         if (node->funcreturn.value->literal.type != DATA->funcdecl_return_type)
         {
-            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type) );
+            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type));
         }
+    }
+}
+
+void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
+{
+    Symbol *sym = lookup_symbol(node, node->location.name);
+    DecafType assigment_type = sym->type;
+
+    DecafType literal_type = GET_INFERRED_TYPE(node);
+
+    if (assigment_type != literal_type)
+    {
+        Error_throw_printf("Expected %s type but type was %s\n", DecafType_to_string(assigment_type), DecafType_to_string(literal_type));
     }
 }
 
@@ -206,7 +222,6 @@ void Analysis_postvisit_return(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_return = false;
 }
-
 
 ErrorList *analyze(ASTNode *tree)
 {
@@ -225,8 +240,7 @@ ErrorList *analyze(ASTNode *tree)
     v->previsit_funcdecl = Analysis_previsit_funcdecl;
     v->previsit_return = Analysis_previsit_return;
     v->postvisit_return = Analysis_postvisit_return;
-    
-    
+    v->previsit_assignment = Analysis_previsit_assignment;
 
     // assign a tyoe to all the literals according to chart thing
 

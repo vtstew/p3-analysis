@@ -1,5 +1,6 @@
-def int main()
-{
-    bool a;
-    return a;
+int x; 
+def int main() 
+{ 
+    x=false; 
+    return 0; 
 }

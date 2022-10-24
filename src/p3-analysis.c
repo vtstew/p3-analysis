@@ -161,6 +161,32 @@ void Analysis_literal_infer(NodeVisitor *visitor, ASTNode *node)
 void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_loop = true;
+    switch (node->whileloop.condition->type)
+    {
+    // binary operators
+    case 10:
+        break;
+    // unary operators
+    case 11:
+        break; 
+    // location
+    case 12:
+        if (lookup_symbol(node, node->whileloop.condition->location.name)->type != BOOL)
+        {
+            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(lookup_symbol(node, node->whileloop.condition->location.name)->type), node->source_line);
+        }
+        break;
+    // literal
+    case 14:
+        if (node->whileloop.condition->literal.type != BOOL)
+        {
+            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(node->whileloop.condition->literal.type), node->source_line);
+        }
+        break;
+    default:
+        Error_throw_printf("Invalid conditional on line %d", node->source_line);
+    }
+
 }
 
 void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
@@ -207,14 +233,78 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 
 void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
 {
-    Symbol *sym = lookup_symbol(node, node->location.name);
-    DecafType assigment_type = sym->type;
-
-    DecafType literal_type = GET_INFERRED_TYPE(node);
-
-    if (assigment_type != literal_type)
+    Symbol *sym = lookup_symbol(node, node->assignment.location->location.name);
+    DecafType left_type = sym->type;
+    DecafType right_type;
+    // DecafType literal_type = GET_INFERRED_TYPE(node);
+    if (node->assignment.value->type == LOCATION)
     {
-        Error_throw_printf("Expected %s type but type was %s\n", DecafType_to_string(assigment_type), DecafType_to_string(literal_type));
+        Symbol *sym = lookup_symbol(node, node->assignment.value->location.name);
+        right_type = sym->type;
+
+    } else 
+    {
+    right_type = node->assignment.value->literal.type;
+    }
+
+    if (left_type != right_type)
+    {
+        Error_throw_printf("Expected %s type but type was %s\n", DecafType_to_string(left_type), DecafType_to_string(right_type));
+    }
+}
+
+void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
+{
+    BinaryOpType binop_type = node->binaryop.operator;
+
+    // for >, >=, <, <=
+    if ((binop_type > 3) || (binop_type < 8))
+    {
+        // check type of left side of expression
+        switch (node->binaryop.left->type)
+        {
+        case 10:
+            break;
+        // literal
+        case 14:
+            break;
+        // location
+        case 12:
+            break;
+        default:
+            break;
+        }
+
+        // check type of right side of expression
+    }
+}
+
+void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
+{
+    switch (node->conditional.condition->type)
+    {
+    // binary operators
+    case 10:
+        break;
+    // unary operators
+    case 11:
+        break; 
+    // location
+    case 12:
+        if (lookup_symbol(node, node->conditional.condition->location.name)->type != BOOL)
+        {
+            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(lookup_symbol(node, node->conditional.condition->location.name)->type), node->source_line);
+        }
+        break;
+    // literal
+    case 14:
+        if (node->conditional.condition->literal.type != BOOL)
+        {
+            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(node->conditional.condition->literal.type), node->source_line);
+        }
+        break;
+    default:
+        Error_throw_printf("Invalid conditional on line %d", node->source_line);
     }
 }
 
@@ -241,6 +331,8 @@ ErrorList *analyze(ASTNode *tree)
     v->previsit_return = Analysis_previsit_return;
     v->postvisit_return = Analysis_postvisit_return;
     v->previsit_assignment = Analysis_previsit_assignment;
+    v->previsit_conditional = Analysis_previsit_conditional;
+    v->previsit_binaryop = Analysis_previsit_binop;
 
     // assign a tyoe to all the literals according to chart thing
 

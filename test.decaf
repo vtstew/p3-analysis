@@ -1,6 +1,8 @@
-int x; 
 def int main() 
 { 
-    x=false; 
-    return 0; 
+    bool a;
+    a = true;
+    while(a == false) {
+
+    }
 }

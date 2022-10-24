@@ -1,8 +1,10 @@
 def int main() 
 { 
     bool a;
+    int b;
     a = true;
-    while(a == false) {
+    b = 2;
+    while((a == true) != 2) {
 
     }
 }

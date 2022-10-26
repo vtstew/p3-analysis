@@ -235,57 +235,6 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
-void binop_helper1(ASTNode *node ,ASTNode *side, DecafType expected_type)
-{
-    // check type of expression
-    switch (side->type)
-    {
-    // binary expression
-    case 10:
-        // let recursion do its thing
-        break;
-    // literal
-    case 14:
-        if (side->literal.type != expected_type) 
-        {
-            Error_throw_printf("Expected %s was %s on line %d\n", DecafType_to_string(expected_type), DecafType_to_string(side->literal.type), node->source_line);
-        }
-        break;
-    // location
-    case 12:
-        if (lookup_symbol(node, side->location.name)->type != expected_type)
-        {
-            Error_throw_printf("Expected %s was %s on line %d\n", DecafType_to_string(expected_type), DecafType_to_string(lookup_symbol(node, side->location.name)->type), node->source_line);
-        }
-        break;
-    default:
-        Error_throw_printf("Invalid binary expression on line %d", node->source_line);
-    }
-}
-
-DecafType binop_helper2(ASTNode *node)
-{
-    // check type of expression
-    switch (node->type)
-    {
-    // binary expression
-    case 10:
-        // let recursion do its thing
-        break;
-    // literal
-    case 14:
-        return node->literal.type;
-    // location
-    case 12:
-        return lookup_symbol(node, node->location.name)->type;
-    default:
-        Error_throw_printf("Invalid binary expression on line %d\n", node->source_line);
-    }
-
-    // makes compiler not yell at us
-    return INT;
-}
-
 void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
 {
     Symbol *sym = lookup_symbol(node, node->assignment.location->location.name);
@@ -318,26 +267,27 @@ void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
 void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
 {
     BinaryOpType binop_type = node->binaryop.operator;
-    // for >, >=, <, <=, +, -, *, /, %
-    if ((binop_type > 3) && (binop_type < 13))
-    {
-        binop_helper1(node, node->binaryop.left, INT);
-        binop_helper1(node, node->binaryop.right, INT);
-    // == and !=
-    } else if ((binop_type == 2) || (binop_type == 3))
-    {
-        DecafType left_type = binop_helper2(node->binaryop.left);
-        DecafType right_type = binop_helper2(node->binaryop.right);
-        if (left_type != right_type)
-        {
-            Error_throw_printf("Type mismatch cannot use == with %s and %s on line %d\n", DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
-        }
-    }
-}
 
-void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
-{
-    
+    // for >, >=, <, <=
+    if ((binop_type > 3) || (binop_type < 8))
+    {
+        // check type of left side of expression
+        switch (node->binaryop.left->type)
+        {
+        case 10:
+            break;
+        // literal
+        case 14:
+            break;
+        // location
+        case 12:
+            break;
+        default:
+            break;
+        }
+
+        // check type of right side of expression
+    }
 }
 
 void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
@@ -394,7 +344,6 @@ ErrorList *analyze(ASTNode *tree)
     v->previsit_assignment = Analysis_previsit_assignment;
     v->previsit_conditional = Analysis_previsit_conditional;
     v->previsit_binaryop = Analysis_previsit_binop;
-    v->postvisit_binaryop = Analysis_postvisit_binop;
 
     // assign a tyoe to all the literals according to chart thing
 

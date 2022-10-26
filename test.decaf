@@ -1,8 +1,6 @@
-def int main() 
-{ 
-    bool a;
-    a = true;
-    while(a == false) {
-
-    }
+def bool main(){
+    bool o;
+    bool i;
+    i = true;
+    return main();
 }

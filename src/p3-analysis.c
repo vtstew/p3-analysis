@@ -138,7 +138,6 @@ void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
     if (DATA->is_return)
     {
         Symbol *sym = lookup_symbol(node, node->location.name);
-
         if (sym != NULL && sym->type != DATA->funcdecl_return_type)
         {
             Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
@@ -168,7 +167,7 @@ void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
         break;
     // unary operators
     case 11:
-        break; 
+        break;
     // location
     case 12:
         if (lookup_symbol(node, node->whileloop.condition->location.name)->type != BOOL)
@@ -186,7 +185,6 @@ void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
     default:
         Error_throw_printf("Invalid conditional on line %d", node->source_line);
     }
-
 }
 
 void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
@@ -212,6 +210,7 @@ void Analysis_previsit_continue(NodeVisitor *visitor, ASTNode *node)
 
 void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
 {
+    // SET_INFERRED_TYPE(lookup_symbol(node, node->funccall.name)->type);
     DATA->funcdecl_return_type = node->funcdecl.return_type;
 }
 
@@ -229,6 +228,11 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
             Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type));
         }
     }
+    else if (node->funcreturn.value->type == FUNCCALL)
+    {
+        Error_throw_printf("here");
+        // ADD ELSE IF FOR FUNC CALLS
+    }
 }
 
 void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
@@ -236,15 +240,22 @@ void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
     Symbol *sym = lookup_symbol(node, node->assignment.location->location.name);
     DecafType left_type = sym->type;
     DecafType right_type;
+
     // DecafType literal_type = GET_INFERRED_TYPE(node);
     if (node->assignment.value->type == LOCATION)
     {
         Symbol *sym = lookup_symbol(node, node->assignment.value->location.name);
-        right_type = sym->type;
 
-    } else 
+        // sym will be NULL if there is a VOID type
+        if (sym == NULL)
+        {
+            Error_throw_printf("Expected type %s but got VOID on line %d\n", DecafType_to_string(left_type), node->source_line);
+        }
+        right_type = sym->type;
+    }
+    else
     {
-    right_type = node->assignment.value->literal.type;
+        right_type = node->assignment.value->literal.type;
     }
 
     if (left_type != right_type)
@@ -288,7 +299,7 @@ void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
         break;
     // unary operators
     case 11:
-        break; 
+        break;
     // location
     case 12:
         if (lookup_symbol(node, node->conditional.condition->location.name)->type != BOOL)

@@ -1,6 +1,18 @@
+<<<<<<< HEAD
 def bool main(){
     bool o;
     bool i;
     i = true;
     return main();
+=======
+def int main() 
+{ 
+    bool a;
+    int b;
+    a = true;
+    b = 2;
+    while((a == true) != 2) {
+
+    }
+>>>>>>> c7acffdef7aff5312cdd58982ac97185eeb5b1c8
 }

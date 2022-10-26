@@ -1,8 +1,12 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 --- outputs/B_add.txt	2022-10-25 13:59:51.278014449 -0400
 +++ expected/B_add.txt	2022-09-23 09:59:29.000000000 -0400
 =======
 --- outputs/B_add.txt	2022-10-24 15:54:22.194612472 -0400
+=======
+--- outputs/B_add.txt	2022-10-24 13:03:08.889828434 -0400
+>>>>>>> parent of c7acffd... lots of binop stuff
 +++ expected/B_add.txt	2022-10-19 11:41:47.000043479 -0400
 >>>>>>> c7acffdef7aff5312cdd58982ac97185eeb5b1c8
 @@ -0,0 +1,14 @@

@@ -267,27 +267,26 @@ void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
 void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
 {
     BinaryOpType binop_type = node->binaryop.operator;
-
-    // for >, >=, <, <=
-    if ((binop_type > 3) || (binop_type < 8))
+    // for >, >=, <, <=, +, -, *, /, %
+    if ((binop_type > 3) && (binop_type < 13))
     {
-        // check type of left side of expression
-        switch (node->binaryop.left->type)
+        binop_helper1(node, node->binaryop.left, INT);
+        binop_helper1(node, node->binaryop.right, INT);
+    // == and !=
+    } else if ((binop_type == 2) || (binop_type == 3))
+    {
+        DecafType left_type = binop_helper2(node->binaryop.left);
+        DecafType right_type = binop_helper2(node->binaryop.right);
+        if (left_type != right_type)
         {
-        case 10:
-            break;
-        // literal
-        case 14:
-            break;
-        // location
-        case 12:
-            break;
-        default:
-            break;
+            Error_throw_printf("Type mismatch cannot use == with %s and %s on line %d\n", DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
         }
-
-        // check type of right side of expression
     }
+}
+
+void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
+{
+    
 }
 
 void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
@@ -344,6 +343,7 @@ ErrorList *analyze(ASTNode *tree)
     v->previsit_assignment = Analysis_previsit_assignment;
     v->previsit_conditional = Analysis_previsit_conditional;
     v->previsit_binaryop = Analysis_previsit_binop;
+    v->postvisit_binaryop = Analysis_postvisit_binop;
 
     // assign a tyoe to all the literals according to chart thing
 

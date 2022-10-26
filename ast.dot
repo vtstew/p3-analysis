@@ -5,6 +5,7 @@ digraph AST {
 6 [shape=box, label="Location name='i'"];
 =======
 3 [shape=box, label="VarDecl name='a'"];
+<<<<<<< HEAD
 4 [shape=box, label="VarDecl name='b'"];
 6 [shape=box, label="Location name='a'"];
 >>>>>>> c7acffdef7aff5312cdd58982ac97185eeb5b1c8
@@ -46,6 +47,26 @@ digraph AST {
 =======
 2 -> 11;
 >>>>>>> c7acffdef7aff5312cdd58982ac97185eeb5b1c8
+=======
+5 [shape=box, label="Location name='a'"];
+6 [shape=box, label="Literal value=true\ntype: bool"];
+4 [shape=box, label="Assignment"];
+4 -> 5;
+4 -> 6;
+9 [shape=box, label="Location name='a'"];
+10 [shape=box, label="Literal value=false\ntype: bool"];
+8 [shape=box, label="BinaryOp op='=='"];
+8 -> 9;
+8 -> 10;
+11 [shape=box, label="Block\nsymbolTable: (empty)"];
+7 [shape=box, label="WhileLoop"];
+7 -> 8;
+7 -> 11;
+2 [shape=box, label="Block\nsymbolTable: \n  a : bool"];
+2 -> 3;
+2 -> 4;
+2 -> 7;
+>>>>>>> parent of c7acffd... lots of binop stuff
 1 [shape=box, label="FuncDecl name='main'\nsymbolTable: (empty)"];
 1 -> 2;
 0 [shape=box, label="Program\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  main : () -> bool"];

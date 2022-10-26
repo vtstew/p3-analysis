@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // CS 432 PROJECT 0: DECAF PROGRAMMING
 //
 // Vivian Stewart
@@ -15,12 +14,5 @@ def int main(int n)
     if (n == 0)
     {
         return 1;
-=======
-def int main() 
-{ 
-    while (3 == (4+1)) {
-
->>>>>>> f1d6f0dcd9dd7144fc8b7f1f8fc44ee9693d3c0a
     }
-    return 9;
 }

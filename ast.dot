@@ -1,45 +1,18 @@
 digraph AST {
-<<<<<<< HEAD
 4 [shape=box, label="Literal value=0\ntype: int"];
 3 [shape=box, label="Return"];
 3 -> 4;
 2 [shape=box, label="Block\nsymbolTable: (empty)"];
 2 -> 3;
 1 [shape=box, label="FuncDecl name='i'\ntype: int\nsymbolTable: (empty)"];
-=======
-5 [shape=box, label="Literal value=3\ntype: int"];
-6 [shape=box, label="Literal value=4\ntype: int"];
-4 [shape=box, label="BinaryOp op='=='\ntype: bool"];
-4 -> 5;
-4 -> 6;
-7 [shape=box, label="Block\nsymbolTable: (empty)"];
-3 [shape=box, label="WhileLoop"];
-3 -> 4;
-3 -> 7;
-2 [shape=box, label="Block\nsymbolTable: (empty)"];
-2 -> 3;
-1 [shape=box, label="FuncDecl name='main'\ntype: int\nsymbolTable: (empty)"];
->>>>>>> f1d6f0dcd9dd7144fc8b7f1f8fc44ee9693d3c0a
 1 -> 2;
-9 [shape=box, label="Location name='n'"];
-10 [shape=box, label="Literal value=0\ntype: int"];
-8 [shape=box, label="BinaryOp op='=='\ntype: bool"];
+7 [shape=box, label="VarDecl name='u'\ntype: bool"];
+9 [shape=box, label="FuncCall name='i'\ntype: int"];
+8 [shape=box, label="Return"];
 8 -> 9;
-8 -> 10;
-13 [shape=box, label="Literal value=1\ntype: int"];
-12 [shape=box, label="Return"];
-12 -> 13;
-11 [shape=box, label="Block\nsymbolTable: (empty)"];
-11 -> 12;
-7 [shape=box, label="Conditional"];
-7 -> 8;
-7 -> 11;
-15 [shape=box, label="FuncCall name='i'\ntype: int"];
-14 [shape=box, label="Return"];
-14 -> 15;
-6 [shape=box, label="Block\nsymbolTable: (empty)"];
+6 [shape=box, label="Block\nsymbolTable: \n  u : bool"];
 6 -> 7;
-6 -> 14;
+6 -> 8;
 5 [shape=box, label="FuncDecl name='main'\ntype: int\nsymbolTable: \n  n : int"];
 5 -> 6;
 0 [shape=box, label="Program\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  i : () -> int\n  main : (int) -> int"];

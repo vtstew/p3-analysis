@@ -4,15 +4,12 @@
 //
 
 def int i(){
-    return 9;
+    return 0;
 }
 
 def int main(int n)
 {
     bool u;
-    u = i();
-    if (n == 0)
-    {
-        return 1;
-    }
+    
+    return i();
 }

@@ -221,6 +221,16 @@ void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
     {
         right_type = INT;
     }
+    else if (node->assignment.value->type == FUNCCALL)
+    {
+        Symbol *sym = lookup_symbol(node, node->assignment.value->funccall.name);
+
+        if (sym == NULL)
+        {
+            Error_throw_printf("Expected type %s but got VOID on line %d\n", DecafType_to_string(left_type), node->source_line);
+        }
+        right_type = sym->type;
+    }
     else
     {
         right_type = node->assignment.value->literal.type;
@@ -360,12 +370,12 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
     {
         Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funcreturn.value->funccall.name);
         DecafType type = sym->type;
-        // Error_throw_printf("\n %s \n", node->funcreturn.value->funccall.name);
+        // Error_throw_printf("\n %s %s \n", DecafType_to_string(type), node->funcreturn.value->funccall.name);
         // Error_throw_printf("\n %s \n", DecafType_to_string(type));
 
         if (type != DATA->funcdecl_return_type)
         {
-            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type));
+            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(type));
         }
     }
 }
@@ -677,7 +687,7 @@ void Analysis_previsit_funcall(NodeVisitor *visitor, ASTNode *node)
     Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
 
     SET_INFERRED_TYPE(sym->type);
-    Error_throw_printf("\n here %s %s \n", DecafType_to_string(sym->type), node->funccall.name);
+    // Error_throw_printf("\n here %s %s \n", DecafType_to_string(sym->type), node->funccall.name);
 }
 
 /**

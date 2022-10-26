@@ -1,5 +1,5 @@
 digraph AST {
-3 [shape=box, label="VarDecl name='a'"];
+3 [shape=box, label="VarDecl name='a'\ntype: bool"];
 5 [shape=box, label="Location name='a'"];
 6 [shape=box, label="Literal value=true\ntype: bool"];
 4 [shape=box, label="Assignment"];
@@ -18,7 +18,7 @@ digraph AST {
 2 -> 3;
 2 -> 4;
 2 -> 7;
-1 [shape=box, label="FuncDecl name='main'\nsymbolTable: (empty)"];
+1 [shape=box, label="FuncDecl name='main'\ntype: int\nsymbolTable: (empty)"];
 1 -> 2;
 0 [shape=box, label="Program\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  main : () -> int"];
 0 -> 1;

@@ -123,7 +123,19 @@ void Analysis_postvisit_program(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_vardecl(NodeVisitor *visitor, ASTNode *node)
 {
-    if (node->vardecl.type == VOID)
+    SET_INFERRED_TYPE(node->vardecl.type);
+}
+
+/**
+ * @brief postvisit vardecl
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
+{
+    DecafType type = GET_INFERRED_TYPE(node);
+    if (type == VOID)
     {
         Error_throw_printf("Void variable '%s' on line %d", node->vardecl.name, node->source_line);
     }
@@ -136,17 +148,6 @@ void Analysis_previsit_vardecl(NodeVisitor *visitor, ASTNode *node)
             Error_throw_printf("Array length must be greater than 0");
         }
     }
-}
-
-/**
- * @brief postvisit vardecl
- *
- * @param visitor
- * @param node
- */
-void Analysis_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
-{
-
 }
 
 /**

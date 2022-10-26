@@ -1,0 +1,14 @@
+Program [line 1]
+  FuncDecl name="main" return_type=int parameters={} [line 1]
+    Block [line 2]
+      VarDecl name="a" type=bool is_array=no array_length=1 [line 3]
+      Assignment [line 4]
+        Location name="a" [line 4]
+        Literal type=bool value=true [line 4]
+      Whileloop [line 5]
+        Binaryop op="==" [line 5]
+          Location name="a" [line 5]
+          Literal type=bool value=false [line 5]
+        Block [line 5]
+1
+RETURN VALUE = -9999999

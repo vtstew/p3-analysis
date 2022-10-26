@@ -1,8 +1,8 @@
 def int main() 
 { 
-    bool a;
-    a = true;
-    while(a == false) {
-
+    int b;
+    b = 2 + (-3);
+    while (!true) {
+        
     }
 }

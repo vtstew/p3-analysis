@@ -218,6 +218,9 @@ void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
             Error_throw_printf("Expected type %s but got VOID on line %d\n", DecafType_to_string(left_type), node->source_line);
         }
         right_type = sym->type;
+    } else if (node->assignment.value->type == BINARYOP)
+    {
+        right_type = INT;
     }
     else
     {
@@ -438,6 +441,10 @@ void binop_helper1(ASTNode *node ,ASTNode *side, DecafType expected_type)
     case 10:
         // let recursion do its thing
         break;
+    // unary expression
+    case 11:
+        // let recursion do its thing
+        break;
     // literal
     case 14:
         if (side->literal.type != expected_type) 
@@ -453,7 +460,7 @@ void binop_helper1(ASTNode *node ,ASTNode *side, DecafType expected_type)
         }
         break;
     default:
-        Error_throw_printf("Invalid binary expression on line %d", node->source_line);
+        Error_throw_printf("Invalid binary expression on line %d\n", node->source_line);
     }
 }
 
@@ -469,6 +476,10 @@ DecafType binop_helper2(ASTNode *node)
     {
     // binary expression
     case 10:
+        // let recursion do its thing
+        break;
+    // unary expression
+    case 11:
         // let recursion do its thing
         break;
     // literal
@@ -497,6 +508,32 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
     // for >, >=, <, <=, +, -, *, /, %
     if ((binop_type > 3) && (binop_type < 13))
     {
+        // set inferred type
+        if (binop_type > 7 && binop_type < 13)
+        {
+            SET_INFERRED_TYPE(INT);
+        } else {
+            SET_INFERRED_TYPE(BOOL);
+        }
+    // == and !=
+    } else if ((binop_type == 2) || (binop_type == 3))
+    {
+        SET_INFERRED_TYPE(BOOL);
+    }
+}
+
+/**
+ * @brief invisit binop
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
+{
+    BinaryOpType binop_type = node->binaryop.operator;
+    // for >, >=, <, <=, +, -, *, /, %
+    if ((binop_type > 3) && (binop_type < 13))
+    {
         binop_helper1(node, node->binaryop.left, INT);
         binop_helper1(node, node->binaryop.right, INT);
     // == and !=
@@ -512,17 +549,6 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
 }
 
 /**
- * @brief invisit binop
- *
- * @param visitor
- * @param node
- */
-void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
-{
-    
-}
-
-/**
  * @brief postvisit binop
  *
  * @param visitor
@@ -530,7 +556,7 @@ void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
 {
-    
+
 }
 
 /**
@@ -541,7 +567,12 @@ void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_unop(NodeVisitor *visitor, ASTNode *node)
 {
-    
+    UnaryOpType unop =  node->unaryop.operator;
+    if (unop == 0) {
+        SET_INFERRED_TYPE(INT);
+    } else {
+        SET_INFERRED_TYPE(BOOL);
+    }
 }
 
 /**
@@ -552,7 +583,36 @@ void Analysis_previsit_unop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_unop(NodeVisitor *visitor, ASTNode *node)
 {
-    
+    DecafType actual_type;
+    DecafType inferred_type = GET_INFERRED_TYPE(node);
+    // check type of expression
+    switch (node->unaryop.child->type)
+    {
+    // binary expression
+    case 10:
+        // let recursion do its thing
+        break;
+    // unary expression
+    case 11:
+        // let recursion do its thing
+        break;
+    // literal
+    case 14:
+        actual_type = node->unaryop.child->literal.type;
+        break;
+    // location
+    case 12:
+        actual_type = lookup_symbol(node, node->unaryop.child->location.name)->type;
+        break;
+    default:
+        Error_throw_printf("Invalid unary expression on line %d\n", node->source_line);
+    }
+    // Error_throw_printf("\nhere\n");
+    if (actual_type != inferred_type)
+    {
+        Error_throw_printf("Type mismatch expected %s was %s on line %d\n", DecafType_to_string(inferred_type), DecafType_to_string(actual_type), node->source_line);
+    }
+
 }
 
 /**

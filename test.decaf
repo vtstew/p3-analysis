@@ -1,8 +1,19 @@
-def int main() 
-{ 
-    int b;
-    b = 2 + (-3);
-    while (!true) {
-        
+// CS 432 PROJECT 0: DECAF PROGRAMMING
+//
+// Vivian Stewart
+//
+
+def int i(){
+    return 9;
+}
+
+def int main(int n)
+{
+    bool u;
+    u = i();
+    if (n == 0)
+    {
+        return 1;
     }
+    return 9;
 }

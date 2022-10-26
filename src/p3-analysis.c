@@ -16,6 +16,7 @@ typedef struct AnalysisData
     ErrorList *errors;
     bool is_loop;
     bool is_return;
+    bool is_conditional;
     DecafType funcdecl_return_type;
 
     /* BOILERPLATE: TODO: add any new desired state information (and clean it up in AnalysisData_free) */
@@ -252,6 +253,7 @@ void Analysis_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
 {
+    DATA->is_conditional = true;
     switch (node->conditional.condition->type)
     {
     // binary operators
@@ -287,7 +289,7 @@ void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
 {
-
+    DATA->is_conditional = false;
 }
 
 /**
@@ -529,7 +531,7 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
  * @param node
  */
 void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
-{
+{    
     BinaryOpType binop_type = node->binaryop.operator;
     // for >, >=, <, <=, +, -, *, /, %
     if ((binop_type > 3) && (binop_type < 13))
@@ -546,6 +548,7 @@ void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
             Error_throw_printf("Type mismatch cannot use == with %s and %s on line %d\n", DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
         }
     }
+
 }
 
 /**
@@ -556,7 +559,11 @@ void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
 {
-
+    if (DATA->is_conditional || DATA->is_loop) {
+        if (GET_INFERRED_TYPE(node) != BOOL) {
+            Error_throw_printf("Invalid condition, must be boolean expression on line %d\n", node->source_line);
+        }
+    }
 }
 
 /**

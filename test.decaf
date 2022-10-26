@@ -1,8 +1,6 @@
 def int main() 
 { 
-    int b;
-    b = 2 + (-3);
-    while (!true) {
-        
+    while (3 == (4+1)) {
+
     }
 }

@@ -91,12 +91,12 @@ Symbol *lookup_symbol_with_reporting(NodeVisitor *visitor, ASTNode *node, const 
 #define GET_INFERRED_TYPE(N) (DecafType) ASTNode_get_attribute(N, "type")
 
 /**
- * @brief check if there is a main method.
+ * @brief previsit program node
  *
  * @param visitor
  * @param node
  */
-void AnalysisVisitor_check_main_fun(NodeVisitor *visitor, ASTNode *node)
+void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
 {
     if (lookup_symbol(node, "main") == NULL)
     {
@@ -105,12 +105,23 @@ void AnalysisVisitor_check_main_fun(NodeVisitor *visitor, ASTNode *node)
 }
 
 /**
- * @brief check for void vardecls.
+ * @brief postvisit program
  *
  * @param visitor
  * @param node
  */
-void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
+void Analysis_postvisit_program(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit vardecl
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_vardecl(NodeVisitor *visitor, ASTNode *node)
 {
     if (node->vardecl.type == VOID)
     {
@@ -128,35 +139,159 @@ void AnalysisVisitor_check_vardecl(NodeVisitor *visitor, ASTNode *node)
 }
 
 /**
- * @brief check location symbol.
+ * @brief postvisit vardecl
  *
  * @param visitor
  * @param node
  */
-void AnalysisVisitor_check_location(NodeVisitor *visitor, ASTNode *node)
+void Analysis_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
 {
-    if (DATA->is_return)
-    {
-        Symbol *sym = lookup_symbol(node, node->location.name);
-        if (sym != NULL && sym->type != DATA->funcdecl_return_type)
-        {
-            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
-        }
-    }
-    lookup_symbol_with_reporting(visitor, node, node->location.name); //== NULL
+
 }
 
 /**
- * @brief set the infered type to the node literal type.
+ * @brief previsit funcdecl
  *
  * @param visitor
  * @param node
  */
-void Analysis_literal_infer(NodeVisitor *visitor, ASTNode *node)
+void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
 {
-    SET_INFERRED_TYPE(node->literal.type);
+    SET_INFERRED_TYPE(node->funcdecl.return_type);
+    DATA->funcdecl_return_type = node->funcdecl.return_type;
 }
 
+/**
+ * @brief postvisit funcdecl
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_funcdecl(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit block
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_block(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief postvisit block
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_block(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit assignment
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
+{
+    Symbol *sym = lookup_symbol(node, node->assignment.location->location.name);
+    DecafType left_type = sym->type;
+    DecafType right_type;
+
+    // DecafType literal_type = GET_INFERRED_TYPE(node);
+    if (node->assignment.value->type == LOCATION)
+    {
+        Symbol *sym = lookup_symbol(node, node->assignment.value->location.name);
+
+        // sym will be NULL if there is a VOID type
+        if (sym == NULL)
+        {
+            Error_throw_printf("Expected type %s but got VOID on line %d\n", DecafType_to_string(left_type), node->source_line);
+        }
+        right_type = sym->type;
+    }
+    else
+    {
+        right_type = node->assignment.value->literal.type;
+    }
+
+    if (left_type != right_type)
+    {
+        Error_throw_printf("Expected %s type but type was %s\n", DecafType_to_string(left_type), DecafType_to_string(right_type));
+    }
+}
+
+/**
+ * @brief postisit assignment
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit conditional
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
+{
+    switch (node->conditional.condition->type)
+    {
+    // binary operators
+    case 10:
+        break;
+    // unary operators
+    case 11:
+        break;
+    // location
+    case 12:
+        if (lookup_symbol(node, node->conditional.condition->location.name)->type != BOOL)
+        {
+            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(lookup_symbol(node, node->conditional.condition->location.name)->type), node->source_line);
+        }
+        break;
+    // literal
+    case 14:
+        if (node->conditional.condition->literal.type != BOOL)
+        {
+            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(node->conditional.condition->literal.type), node->source_line);
+        }
+        break;
+    default:
+        Error_throw_printf("Invalid conditional on line %d", node->source_line);
+    }
+}
+
+/**
+ * @brief postvisit conditional
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit while loop
+ *
+ * @param visitor
+ * @param node
+ */
 void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_loop = true;
@@ -187,33 +322,23 @@ void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief postvisit while loop
+ *
+ * @param visitor
+ * @param node
+ */
 void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_loop = false;
 }
 
-void Analysis_previsit_break(NodeVisitor *visitor, ASTNode *node)
-{
-    if (!DATA->is_loop)
-    {
-        Error_throw_printf("Break statement should be inside a while loop.");
-    }
-}
-
-void Analysis_previsit_continue(NodeVisitor *visitor, ASTNode *node)
-{
-    if (!DATA->is_loop)
-    {
-        Error_throw_printf("Continue statement should be inside a while loop.");
-    }
-}
-
-void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
-{
-    // SET_INFERRED_TYPE(lookup_symbol(node, node->funccall.name)->type);
-    DATA->funcdecl_return_type = node->funcdecl.return_type;
-}
-
+/**
+ * @brief previsit return 
+ *
+ * @param visitor
+ * @param node
+ */
 void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_return = true;
@@ -235,6 +360,74 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief postvisit return 
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_return(NodeVisitor *visitor, ASTNode *node)
+{
+    DATA->is_return = false;
+}
+
+/**
+ * @brief previsit break
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_break(NodeVisitor *visitor, ASTNode *node)
+{
+    if (!DATA->is_loop)
+    {
+        Error_throw_printf("Break statement should be inside a while loop.");
+    }
+}
+
+/**
+ * @brief postvisit break
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_break(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit continue
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_continue(NodeVisitor *visitor, ASTNode *node)
+{
+    if (!DATA->is_loop)
+    {
+        Error_throw_printf("Continue statement should be inside a while loop.");
+    }
+}
+
+/**
+ * @brief postvisit continue
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_continue(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief checks if a binary operator's expression evaluates to expected type
+ *
+ * @param node
+ * @param side
+ * @param expected_type
+ */
 void binop_helper1(ASTNode *node ,ASTNode *side, DecafType expected_type)
 {
     // check type of expression
@@ -263,6 +456,11 @@ void binop_helper1(ASTNode *node ,ASTNode *side, DecafType expected_type)
     }
 }
 
+/**
+ * @brief returns type of expression for binary operators
+ *
+ * @param node
+ */
 DecafType binop_helper2(ASTNode *node)
 {
     // check type of expression
@@ -286,35 +484,12 @@ DecafType binop_helper2(ASTNode *node)
     return INT;
 }
 
-void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
-{
-    Symbol *sym = lookup_symbol(node, node->assignment.location->location.name);
-    DecafType left_type = sym->type;
-    DecafType right_type;
-
-    // DecafType literal_type = GET_INFERRED_TYPE(node);
-    if (node->assignment.value->type == LOCATION)
-    {
-        Symbol *sym = lookup_symbol(node, node->assignment.value->location.name);
-
-        // sym will be NULL if there is a VOID type
-        if (sym == NULL)
-        {
-            Error_throw_printf("Expected type %s but got VOID on line %d\n", DecafType_to_string(left_type), node->source_line);
-        }
-        right_type = sym->type;
-    }
-    else
-    {
-        right_type = node->assignment.value->literal.type;
-    }
-
-    if (left_type != right_type)
-    {
-        Error_throw_printf("Expected %s type but type was %s\n", DecafType_to_string(left_type), DecafType_to_string(right_type));
-    }
-}
-
+/**
+ * @brief previsit binop
+ *
+ * @param visitor
+ * @param node
+ */
 void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
 {
     BinaryOpType binop_type = node->binaryop.operator;
@@ -335,44 +510,124 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
     }
 }
 
+/**
+ * @brief invisit binop
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
+{
+    
+}
+
+/**
+ * @brief postvisit binop
+ *
+ * @param visitor
+ * @param node
+ */
 void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
 {
     
 }
 
-void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
+/**
+ * @brief previsit unary operator
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_unop(NodeVisitor *visitor, ASTNode *node)
 {
-    switch (node->conditional.condition->type)
-    {
-    // binary operators
-    case 10:
-        break;
-    // unary operators
-    case 11:
-        break;
-    // location
-    case 12:
-        if (lookup_symbol(node, node->conditional.condition->location.name)->type != BOOL)
-        {
-            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(lookup_symbol(node, node->conditional.condition->location.name)->type), node->source_line);
-        }
-        break;
-    // literal
-    case 14:
-        if (node->conditional.condition->literal.type != BOOL)
-        {
-            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(node->conditional.condition->literal.type), node->source_line);
-        }
-        break;
-    default:
-        Error_throw_printf("Invalid conditional on line %d", node->source_line);
-    }
+    
 }
 
-void Analysis_postvisit_return(NodeVisitor *visitor, ASTNode *node)
+/**
+ * @brief postvisit unary operator
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_unop(NodeVisitor *visitor, ASTNode *node)
 {
-    DATA->is_return = false;
+    
 }
+
+/**
+ * @brief previsit location
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
+{
+    if (DATA->is_return)
+    {
+        Symbol *sym = lookup_symbol(node, node->location.name);
+        if (sym != NULL && sym->type != DATA->funcdecl_return_type)
+        {
+            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
+        }
+    }
+    lookup_symbol_with_reporting(visitor, node, node->location.name); //== NULL
+}
+
+/**
+ * @brief postvisit location
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_location(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit function call
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_funcall(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief postvisit function call
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_funcall(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
+/**
+ * @brief previsit literal
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_literal(NodeVisitor *visitor, ASTNode *node)
+{
+    SET_INFERRED_TYPE(node->literal.type);
+}
+
+/**
+ * @brief postvisit literal
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_postvisit_literal(NodeVisitor *visitor, ASTNode *node)
+{
+
+}
+
 
 ErrorList *analyze(ASTNode *tree)
 {
@@ -382,19 +637,51 @@ ErrorList *analyze(ASTNode *tree)
     v->dtor = (Destructor)AnalysisData_free;
 
     /* BOILERPLATE: TODO: register analysis callbacks */
-    v->previsit_vardecl = AnalysisVisitor_check_vardecl;
-    v->previsit_program = AnalysisVisitor_check_main_fun;
-    v->previsit_location = AnalysisVisitor_check_location;
-    v->previsit_literal = Analysis_literal_infer;
-    v->previsit_whileloop = Analysis_previsit_while_loop;
-    v->previsit_break = Analysis_previsit_break;
+    v->previsit_program = Analysis_previsit_program;
+    v->postvisit_program = Analysis_postvisit_program;
+
+    v->previsit_vardecl = Analysis_previsit_vardecl;
+    v->postvisit_vardecl = Analysis_postvisit_vardecl;
+
     v->previsit_funcdecl = Analysis_previsit_funcdecl;
+    v->postvisit_funcdecl = Analysis_postvisit_funcdecl;
+
+    v->previsit_block = Analysis_previsit_block;
+    v->postvisit_block = Analysis_postvisit_block;
+
+    v->previsit_assignment = Analysis_previsit_assignment;
+    v->postvisit_assignment = Analysis_postvisit_assignment;
+
+    v->previsit_conditional = Analysis_previsit_conditional;
+    v->postvisit_conditional = Analysis_postvisit_conditional;
+
+    v->previsit_whileloop = Analysis_previsit_while_loop;
+    v->postvisit_whileloop = Analysis_postvisit_while_loop;
+
     v->previsit_return = Analysis_previsit_return;
     v->postvisit_return = Analysis_postvisit_return;
-    v->previsit_assignment = Analysis_previsit_assignment;
-    v->previsit_conditional = Analysis_previsit_conditional;
+
+    v->previsit_break = Analysis_previsit_break;
+    v->postvisit_break = Analysis_postvisit_break;
+
+    v->previsit_continue = Analysis_previsit_continue;
+    v->postvisit_continue = Analysis_postvisit_continue;
+
     v->previsit_binaryop = Analysis_previsit_binop;
+    v->invisit_binaryop = Analysis_invisit_binop;
     v->postvisit_binaryop = Analysis_postvisit_binop;
+
+    v->previsit_unaryop = Analysis_previsit_unop;
+    v->postvisit_unaryop = Analysis_postvisit_unop;
+
+    v->previsit_location = Analysis_previsit_location;
+    v->postvisit_location = Analysis_postvisit_location;
+
+    v->previsit_funccall = Analysis_previsit_funcall;
+    v->postvisit_funccall = Analysis_postvisit_funcall;
+
+    v->previsit_literal = Analysis_previsit_literal;
+    v->postvisit_literal = Analysis_postvisit_literal;
 
     // assign a tyoe to all the literals according to chart thing
 

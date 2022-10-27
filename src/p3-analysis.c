@@ -126,10 +126,6 @@ void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
     {
         Error_throw_printf("Program does not contain a 'main' function\n");
     }
-    if (lookup_symbol(node, "main")->type != INT)
-    {
-        Error_throw_printf("Program 'main' function must return an int\n");
-    }
     find_ducplicat_helper(node);
 }
 
@@ -141,6 +137,10 @@ void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_program(NodeVisitor *visitor, ASTNode *node)
 {
+    if (lookup_symbol(node, "main")->type != INT)
+    {
+        Error_throw_printf("Program 'main' function must return an int\n");
+    }
 }
 
 /**

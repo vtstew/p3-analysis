@@ -541,20 +541,6 @@ void Analysis_postvisit_unop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
 {
-    // if (DATA->is_return)
-    // {
-    //     lookup_symbol_with_reporting(visitor, node, node->location.name);
-    //     // if (sym == NULL)
-    //     // {
-    //     //     ErrorList_printf(ERROR_LIST, "Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
-    //     //     Error_throw_printf("here");
-    //     // }
-    //     // else
-    //      if (sym != NULL && sym->type != DATA->funcdecl_return_type)
-    //     {
-    //         Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
-    //     }
-    // } 
     if (lookup_symbol_with_reporting(visitor, node, node->location.name) != NULL)
     {
         SET_INFERRED_TYPE(lookup_symbol_with_reporting(visitor, node, node->location.name)->type);
@@ -569,6 +555,17 @@ void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_location(NodeVisitor *visitor, ASTNode *node)
 {
+    Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->location.name);
+    // Error_throw_printf("\n %d %d \n", node->location.index->literal.integer, sym->length);
+
+    if (sym->symbol_type == 1 && node->location.index == NULL)
+    {
+        Error_throw_printf("Expected array index on line %d\n", node->source_line);
+    }
+    // if (node->location.index->literal.integer < 0 || node->location.index->literal.integer >= sym->length)
+    // {
+    //     Error_throw_printf("Index out of bounds on line %d\n", node->source_line);
+    // }
 }
 
 /**

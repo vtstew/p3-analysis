@@ -1,28 +1,22 @@
-==743571== Memcheck, a memory error detector
-==743571== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==743571== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
-==743571== Command: ../decaf inputs/add.decaf
-==743571== 
-Program [line 1]
-SYM TABLE:
- print_int : (int) -> void
- print_bool : (bool) -> void
- print_str : (str) -> void
- main : () -> int
+==781685== Memcheck, a memory error detector
+==781685== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==781685== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==781685== Command: ../decaf inputs/add.decaf
+==781685== 
 
-  FuncDecl name="main" return_type=int parameters={} [line 1]
-  SYM TABLE:
-
-    Block [line 2]
-    SYM TABLE:
-     a : int
-
-==743571== 
-==743571== HEAP SUMMARY:
-==743571==     in use at exit: 0 bytes in 0 blocks
-==743571==   total heap usage: 1,792 allocs, 1,792 frees, 209,448 bytes allocated
-==743571== 
-==743571== All heap blocks were freed -- no leaks are possible
-==743571== 
-==743571== For lists of detected and suppressed errors, rerun with: -s
-==743571== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+ 0 
+==781685== 
+==781685== HEAP SUMMARY:
+==781685==     in use at exit: 320 bytes in 3 blocks
+==781685==   total heap usage: 1,772 allocs, 1,769 frees, 191,432 bytes allocated
+==781685== 
+==781685== LEAK SUMMARY:
+==781685==    definitely lost: 280 bytes in 1 blocks
+==781685==    indirectly lost: 40 bytes in 2 blocks
+==781685==      possibly lost: 0 bytes in 0 blocks
+==781685==    still reachable: 0 bytes in 0 blocks
+==781685==         suppressed: 0 bytes in 0 blocks
+==781685== Rerun with --leak-check=full to see details of leaked memory
+==781685== 
+==781685== For lists of detected and suppressed errors, rerun with: -s
+==781685== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

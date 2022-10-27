@@ -4,8 +4,9 @@
 //
 def int main()
 {
-    if (-true + 3) {
-
-    }
+    int a[6];
+    int o;
+    o = 9;
+    a[o] = 0;
 }
 

@@ -4,6 +4,6 @@
 //
 def int main()
 {
-    return a;
+    return m;
 }
 

@@ -564,22 +564,33 @@ void Analysis_postvisit_unop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
 {
-    if (DATA->is_return)
-    {
-        Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->location.name);
-        if (sym != NULL && sym->type != DATA->funcdecl_return_type)
-        {
-            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
-        }
-    }
+    // if (DATA->is_return)
+    // {
+    //     lookup_symbol_with_reporting(visitor, node, node->location.name);
+    //     // if (sym == NULL)
+    //     // {
+    //     //     ErrorList_printf(ERROR_LIST, "Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
+    //     //     Error_throw_printf("here");
+    //     // }
+    //     // else
+    //      if (sym != NULL && sym->type != DATA->funcdecl_return_type)
+    //     {
+    //         Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
+    //     }
+    // } 
     Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->location.name);
 
-    if (sym == NULL)
-    {
-        Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
-    }
+    // if (sym == NULL)
+    // {
+    //     // Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
+    //     ErrorList_printf(ERROR_LIST, "Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
+    //     Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
+    // }
+    // else
+    // {
 
-    SET_INFERRED_TYPE(sym->type);
+    // SET_INFERRED_TYPE(sym->type);
+    // }
 }
 
 /**

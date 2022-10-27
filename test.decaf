@@ -1,8 +1,10 @@
 def int main()
 {
-    while (2 || 4){
+    int a;
+}
 
-    }
+def int main(){
+    int a;
 }
 
 

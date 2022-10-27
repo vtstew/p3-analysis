@@ -104,28 +104,24 @@ void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
     {
         Error_throw_printf("Program does not contain a 'main' function");
     }
-    // SymbolTable *table = (SymbolTable *)ASTNode_get_attribute(node, "symbolTable");
-    // int count = 0;
-    // FOR_EACH(Symbol *, s1, table->local_symbols)
-    // {
-    //     printf("Symbol: %s\n", s1->name);
-    //     count = 0;
-    //     FOR_EACH(Symbol *, s2, table->local_symbols)
-    // {
+    SymbolTable *table = (SymbolTable *)ASTNode_get_attribute(node, "symbolTable");
+    int count = 0;
+    FOR_EACH(Symbol *, s1, table->local_symbols)
+    {
+        count = 0;
+        FOR_EACH(Symbol *, s2, table->local_symbols)
+        {
+            if (strcmp(s1->name, s2->name) == 0)
+            {
+                count = count + 1;
 
-    //     if (s1->name == s2->name)
-    //     {
-    //         count = count + 1;
-    //         printf("DUP Symbol: %s %d\n", s1->name, count);
-
-    //         if (count > 1)
-    //         {
-    //             printf("HERE\n");
-    //             Error_throw_printf("Duplicate names %s\n", s1->name);
-    //         }
-    //     }
-    // }
-    // }
+                if (count > 1)
+                {
+                    Error_throw_printf("Duplicate names %s\n", s1->name);
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -507,6 +503,10 @@ void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
     {
         SET_INFERRED_TYPE(lookup_symbol_with_reporting(visitor, node, node->location.name)->type);
     }
+    // else
+    // {
+    //     Error_throw_printf("here");
+    // }
 }
 
 /**
@@ -518,9 +518,13 @@ void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
 void Analysis_postvisit_location(NodeVisitor *visitor, ASTNode *node)
 {
     Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->location.name);
-    // Error_throw_printf("\n %d %d \n", node->location.index->literal.integer, sym->length);
+    // Error_throw_printf("\n here \n");
+    if (sym == NULL)
+    {
+        Error_throw_printf("Expected valid var on line %d\n", node->source_line);
+    }
 
-    if (sym->symbol_type == 1 && node->location.index == NULL)
+    if (sym != NULL && sym->symbol_type == 1 && node->location.index == NULL)
     {
         Error_throw_printf("Expected array index on line %d\n", node->source_line);
     }

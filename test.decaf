@@ -2,14 +2,8 @@
 //
 // Vivian Stewart
 //
-
-def int i(){
-    return 0;
-}
-
-def int main(int n)
+def int main()
 {
-    bool u;
-    
-    return i();
+    return a;
 }
+

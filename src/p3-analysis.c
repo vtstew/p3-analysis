@@ -73,6 +73,7 @@ void AnalysisData_free(AnalysisData *data)
 Symbol *lookup_symbol_with_reporting(NodeVisitor *visitor, ASTNode *node, const char *name)
 {
     Symbol *symbol = lookup_symbol(node, name);
+
     if (symbol == NULL)
     {
         ErrorList_printf(ERROR_LIST, "Symbol '%s' undefined on line %d", name, node->source_line);
@@ -201,45 +202,7 @@ void Analysis_postvisit_block(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
 {
-    Symbol *sym = lookup_symbol(node, node->assignment.location->location.name);
-    DecafType left_type = sym->type;
-    DecafType right_type;
-
-    // DecafType literal_type = GET_INFERRED_TYPE(node);
-    if (node->assignment.value->type == LOCATION)
-    {
-        Symbol *sym = lookup_symbol(node, node->assignment.value->location.name);
-
-        // sym will be NULL if there is a VOID type
-        if (sym == NULL)
-        {
-            Error_throw_printf("Expected type %s but got VOID on line %d\n", DecafType_to_string(left_type), node->source_line);
-        }
-        right_type = sym->type;
-    }
-    else if (node->assignment.value->type == BINARYOP)
-    {
-        right_type = INT;
-    }
-    else if (node->assignment.value->type == FUNCCALL)
-    {
-        Symbol *sym = lookup_symbol(node, node->assignment.value->funccall.name);
-
-        if (sym == NULL)
-        {
-            Error_throw_printf("Expected type %s but got VOID on line %d\n", DecafType_to_string(left_type), node->source_line);
-        }
-        right_type = sym->type;
-    }
-    else
-    {
-        right_type = node->assignment.value->literal.type;
-    }
-
-    if (left_type != right_type)
-    {
-        Error_throw_printf("Expected %s type but type was %s\n", DecafType_to_string(left_type), DecafType_to_string(right_type));
-    }
+    // do nothing
 }
 
 /**
@@ -250,6 +213,12 @@ void Analysis_previsit_assignment(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
 {
+    DecafType left_type = GET_INFERRED_TYPE(node->assignment.location);
+    DecafType right_type = GET_INFERRED_TYPE(node->assignment.value);
+    if (left_type != right_type)
+    {
+        Error_throw_printf("Expected %s type but type was %s\n", DecafType_to_string(left_type), DecafType_to_string(right_type));
+    }
 }
 
 /**
@@ -355,29 +324,29 @@ void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
 void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_return = true;
-    if (node->funcreturn.value->type == LOCATION)
-    {
-        // do nothing and let previsit_location handle error
-    }
-    else if (node->funcreturn.value->type == LITERAL)
-    {
-        if (node->funcreturn.value->literal.type != DATA->funcdecl_return_type)
-        {
-            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type));
-        }
-    }
-    else if (node->funcreturn.value->type == FUNCCALL)
-    {
-        Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funcreturn.value->funccall.name);
-        DecafType type = sym->type;
-        // Error_throw_printf("\n %s %s \n", DecafType_to_string(type), node->funcreturn.value->funccall.name);
-        // Error_throw_printf("\n %s \n", DecafType_to_string(type));
+    // if (node->funcreturn.value->type == LOCATION)
+    // {
+    //     // do nothing and let previsit_location handle error
+    // }
+    // else if (node->funcreturn.value->type == LITERAL)
+    // {
+    //     if (node->funcreturn.value->literal.type != DATA->funcdecl_return_type)
+    //     {
+    //         Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type));
+    //     }
+    // }
+    // else if (node->funcreturn.value->type == FUNCCALL)
+    // {
+    //     Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funcreturn.value->funccall.name);
+    //     DecafType type = sym->type;
+    //     // Error_throw_printf("\n %s %s \n", DecafType_to_string(type), node->funcreturn.value->funccall.name);
+    //     // Error_throw_printf("\n %s \n", DecafType_to_string(type));
 
-        if (type != DATA->funcdecl_return_type)
-        {
-            Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(type));
-        }
-    }
+    //     if (type != DATA->funcdecl_return_type)
+    //     {
+    //         Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(type));
+    //     }
+    // }
 }
 
 /**
@@ -389,6 +358,11 @@ void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 void Analysis_postvisit_return(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_return = false;
+    DecafType infer_return_value = GET_INFERRED_TYPE(node->funcreturn.value);
+    if (DATA->funcdecl_return_type != infer_return_value)
+    {
+        Error_throw_printf("Invalid return type, Expected %s was %s on line %d\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(infer_return_value), node->source_line);
+    }
 }
 
 /**
@@ -440,77 +414,6 @@ void Analysis_postvisit_continue(NodeVisitor *visitor, ASTNode *node)
 }
 
 /**
- * @brief checks if a binary operator's expression evaluates to expected type
- *
- * @param node
- * @param side
- * @param expected_type
- */
-void binop_helper1(ASTNode *node, ASTNode *side, DecafType expected_type)
-{
-    // check type of expression
-    switch (side->type)
-    {
-    // binary expression
-    case 10:
-        // let recursion do its thing
-        break;
-    // unary expression
-    case 11:
-        // let recursion do its thing
-        break;
-    // literal
-    case 14:
-        if (side->literal.type != expected_type)
-        {
-            Error_throw_printf("Expected %s was %s on line %d\n", DecafType_to_string(expected_type), DecafType_to_string(side->literal.type), node->source_line);
-        }
-        break;
-    // location
-    case 12:
-        if (lookup_symbol(node, side->location.name)->type != expected_type)
-        {
-            Error_throw_printf("Expected %s was %s on line %d\n", DecafType_to_string(expected_type), DecafType_to_string(lookup_symbol(node, side->location.name)->type), node->source_line);
-        }
-        break;
-    default:
-        Error_throw_printf("Invalid binary expression on line %d\n", node->source_line);
-    }
-}
-
-/**
- * @brief returns type of expression for binary operators
- *
- * @param node
- */
-DecafType binop_helper2(ASTNode *node)
-{
-    // check type of expression
-    switch (node->type)
-    {
-    // binary expression
-    case 10:
-        // let recursion do its thing
-        break;
-    // unary expression
-    case 11:
-        // let recursion do its thing
-        break;
-    // literal
-    case 14:
-        return node->literal.type;
-    // location
-    case 12:
-        return lookup_symbol(node, node->location.name)->type;
-    default:
-        Error_throw_printf("Invalid binary expression on line %d\n", node->source_line);
-    }
-
-    // makes compiler not yell at us
-    return INT;
-}
-
-/**
  * @brief previsit binop
  *
  * @param visitor
@@ -533,7 +436,7 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
         }
         // == and !=
     }
-    else if ((binop_type == 2) || (binop_type == 3))
+    else if ((binop_type == 2) || (binop_type == 3) || (binop_type == 0) || (binop_type == 1))
     {
         SET_INFERRED_TYPE(BOOL);
     }
@@ -547,29 +450,6 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_invisit_binop(NodeVisitor *visitor, ASTNode *node)
 {
-    BinaryOpType binop_type = node->binaryop.operator;
-    // for >, >=, <, <=, +, -, *, /, %
-    if ((binop_type > 3) && (binop_type < 13))
-    {
-        binop_helper1(node, node->binaryop.left, INT);
-        binop_helper1(node, node->binaryop.right, INT);
-        // == and !=
-    }
-    else if ((binop_type == 2) || (binop_type == 3))
-    {
-        DecafType left_type = binop_helper2(node->binaryop.left);
-        DecafType right_type = binop_helper2(node->binaryop.right);
-        if (left_type != right_type)
-        {
-            Error_throw_printf("Type mismatch cannot use == with %s and %s on line %d\n", DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
-        }
-    }
-    // || and &&
-    else if ((binop_type == 0) || (binop_type == 1))
-    {
-        binop_helper1(node, node->binaryop.left, BOOL);
-        binop_helper1(node, node->binaryop.right, BOOL);
-    }
 }
 
 /**
@@ -585,6 +465,35 @@ void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
         if (GET_INFERRED_TYPE(node) != BOOL)
         {
             Error_throw_printf("Invalid condition, must be boolean expression on line %d\n", node->source_line);
+        }
+    }
+
+    BinaryOpType binop_type = node->binaryop.operator;
+    DecafType left_type = GET_INFERRED_TYPE(node->binaryop.left);
+    DecafType right_type = GET_INFERRED_TYPE(node->binaryop.right);
+    // for >, >=, <, <=, +, -, *, /, %
+    if ((binop_type > 3) && (binop_type < 13))
+    {
+        if (left_type != INT || right_type != INT)
+        {
+            Error_throw_printf("Cannot use operator %s on type %s and %s on line %d\n", BinaryOpToString(binop_type), DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
+        }
+
+        // == and !=
+    }
+    else if ((binop_type == 2) || (binop_type == 3))
+    {
+        if (left_type != right_type)
+        {
+            Error_throw_printf("Cannot use operator %s on type %s and %s on line %d\n", BinaryOpToString(binop_type), DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
+        }
+    }
+    // || and &&
+    else if ((binop_type == 0) || (binop_type == 1))
+    {
+        if (left_type != BOOL || right_type != BOOL)
+        {
+            Error_throw_printf("Cannot use operator %s on type %s and %s on line %d\n", BinaryOpToString(binop_type), DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
         }
     }
 }
@@ -657,13 +566,20 @@ void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
 {
     if (DATA->is_return)
     {
-        Symbol *sym = lookup_symbol(node, node->location.name);
+        Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->location.name);
         if (sym != NULL && sym->type != DATA->funcdecl_return_type)
         {
             Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(sym->type));
         }
     }
-    lookup_symbol_with_reporting(visitor, node, node->location.name); //== NULL
+    Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->location.name);
+
+    if (sym == NULL)
+    {
+        Error_throw_printf("Symbol '%s' undefined on line %d\n", node->location.name, node->source_line);
+    }
+
+    SET_INFERRED_TYPE(sym->type);
 }
 
 /**

@@ -1,6 +1,7 @@
-D_undefined_var                pass
+D_undefined_var                FAIL (see outputs/D_undefined_var.diff for details)
 B_add                          pass
-No memory leak found.
+Memory leak(s) found. See files listed below for details.
+  - valgrind/D_undefined_var.txt
 ========================================
  NOTICE: THIS TESTSUITE IS INCOMPLETE.
 YOU WILL BE GRADED ON OTHER TEST CASES.

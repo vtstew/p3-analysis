@@ -1,12 +1,9 @@
-// CS 432 PROJECT 0: DECAF PROGRAMMING
-//
-// Vivian Stewart
-//
 def int main()
 {
-    int a[6];
-    int o;
-    o = 9;
-    a[o] = 0;
+    while (2 || 4){
+
+    }
 }
+
+
 

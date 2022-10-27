@@ -104,6 +104,28 @@ void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
     {
         Error_throw_printf("Program does not contain a 'main' function");
     }
+    // SymbolTable *table = (SymbolTable *)ASTNode_get_attribute(node, "symbolTable");
+    // int count = 0;
+    // FOR_EACH(Symbol *, s1, table->local_symbols)
+    // {
+    //     printf("Symbol: %s\n", s1->name);
+    //     count = 0;
+    //     FOR_EACH(Symbol *, s2, table->local_symbols)
+    // {
+
+    //     if (s1->name == s2->name)
+    //     {
+    //         count = count + 1;
+    //         printf("DUP Symbol: %s %d\n", s1->name, count);
+
+    //         if (count > 1)
+    //         {
+    //             printf("HERE\n");
+    //             Error_throw_printf("Duplicate names %s\n", s1->name);
+    //         }
+    //     }
+    // }
+    // }
 }
 
 /**
@@ -230,31 +252,6 @@ void Analysis_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
 void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_conditional = true;
-    switch (node->conditional.condition->type)
-    {
-    // binary operators
-    case 10:
-        break;
-    // unary operators
-    case 11:
-        break;
-    // location
-    case 12:
-        if (lookup_symbol(node, node->conditional.condition->location.name)->type != BOOL)
-        {
-            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(lookup_symbol(node, node->conditional.condition->location.name)->type), node->source_line);
-        }
-        break;
-    // literal
-    case 14:
-        if (node->conditional.condition->literal.type != BOOL)
-        {
-            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(node->conditional.condition->literal.type), node->source_line);
-        }
-        break;
-    default:
-        Error_throw_printf("Invalid conditional on line %d", node->source_line);
-    }
 }
 
 /**
@@ -266,6 +263,13 @@ void Analysis_previsit_conditional(NodeVisitor *visitor, ASTNode *node)
 void Analysis_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_conditional = false;
+
+    DecafType cond_type = GET_INFERRED_TYPE(node->conditional.condition);
+
+    if (cond_type != BOOL)
+    {
+        Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(cond_type), node->source_line);
+    }
 }
 
 /**
@@ -277,31 +281,6 @@ void Analysis_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
 void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_loop = true;
-    switch (node->whileloop.condition->type)
-    {
-    // binary operators
-    case 10:
-        break;
-    // unary operators
-    case 11:
-        break;
-    // location
-    case 12:
-        if (lookup_symbol(node, node->whileloop.condition->location.name)->type != BOOL)
-        {
-            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(lookup_symbol(node, node->whileloop.condition->location.name)->type), node->source_line);
-        }
-        break;
-    // literal
-    case 14:
-        if (node->whileloop.condition->literal.type != BOOL)
-        {
-            Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(node->whileloop.condition->literal.type), node->source_line);
-        }
-        break;
-    default:
-        Error_throw_printf("Invalid conditional on line %d", node->source_line);
-    }
 }
 
 /**
@@ -313,6 +292,12 @@ void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
 void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_loop = false;
+    DecafType cond_type = GET_INFERRED_TYPE(node->whileloop.condition);
+
+    if (cond_type != BOOL)
+    {
+        Error_throw_printf("Conditional type was %s, expected bool on line %d\n", DecafType_to_string(cond_type), node->source_line);
+    }
 }
 
 /**
@@ -324,29 +309,6 @@ void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
 void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 {
     DATA->is_return = true;
-    // if (node->funcreturn.value->type == LOCATION)
-    // {
-    //     // do nothing and let previsit_location handle error
-    // }
-    // else if (node->funcreturn.value->type == LITERAL)
-    // {
-    //     if (node->funcreturn.value->literal.type != DATA->funcdecl_return_type)
-    //     {
-    //         Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(node->funcreturn.value->literal.type));
-    //     }
-    // }
-    // else if (node->funcreturn.value->type == FUNCCALL)
-    // {
-    //     Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funcreturn.value->funccall.name);
-    //     DecafType type = sym->type;
-    //     // Error_throw_printf("\n %s %s \n", DecafType_to_string(type), node->funcreturn.value->funccall.name);
-    //     // Error_throw_printf("\n %s \n", DecafType_to_string(type));
-
-    //     if (type != DATA->funcdecl_return_type)
-    //     {
-    //         Error_throw_printf("Expected %s return type but type was %s\n", DecafType_to_string(DATA->funcdecl_return_type), DecafType_to_string(type));
-    //     }
-    // }
 }
 
 /**

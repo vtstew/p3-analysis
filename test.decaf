@@ -1,16 +1,6 @@
 int a;
 
-def int hi(int hi, int hi2)
-{
-    return 2;
-}
-
-def int main()
-{
-    int i[9];
-    int j;
-    bool k;
-    j = 2;
-    k = true;
-    return hi(j);
+def bool main(int a) 
+{ 
+    return 0; 
 }

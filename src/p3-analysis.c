@@ -122,9 +122,13 @@ void find_ducplicat_helper(ASTNode *node)
  */
 void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
 {
-    if (lookup_symbol(node, "main") == NULL)
+    if (lookup_symbol(node, "main") == NULL || lookup_symbol(node, "main")->symbol_type != FUNCTION_SYMBOL)
     {
-        Error_throw_printf("Program does not contain a 'main' function");
+        Error_throw_printf("Program does not contain a 'main' function\n");
+    }
+    if (lookup_symbol(node, "main")->type != INT)
+    {
+        Error_throw_printf("Program 'main' function must return an int\n");
     }
     find_ducplicat_helper(node);
 }
@@ -169,7 +173,7 @@ void Analysis_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
     {
         if (node->vardecl.array_length <= 0)
         {
-            Error_throw_printf("Array length must be greater than 0");
+            Error_throw_printf("Array length must be greater than 0\n");
         }
     }
 }
@@ -340,7 +344,7 @@ void Analysis_previsit_break(NodeVisitor *visitor, ASTNode *node)
 {
     if (!DATA->is_loop)
     {
-        Error_throw_printf("Break statement should be inside a while loop.");
+        Error_throw_printf("Break statement should be inside a while loop.\n");
     }
 }
 
@@ -570,7 +574,7 @@ void Analysis_postvisit_funcall(NodeVisitor *visitor, ASTNode *node)
 {
     Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
 
-    if (sym->parameters->size != node->funccall.arguments->size) 
+    if (sym->parameters->size != node->funccall.arguments->size)
     {
         Error_throw_printf("Incorrect number of arguments, expected %d, but got %d on line %d\n", sym->parameters->size, node->funccall.arguments->size, node->source_line);
     }

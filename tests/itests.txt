@@ -1,7 +1,6 @@
 D_undefined_var                FAIL (see outputs/D_undefined_var.diff for details)
-B_add                          FAIL (see outputs/B_add.diff for details)
+B_add                          pass
 Memory leak(s) found. See files listed below for details.
-  - valgrind/B_add.txt
   - valgrind/D_undefined_var.txt
 ========================================
  NOTICE: THIS TESTSUITE IS INCOMPLETE.

@@ -1,11 +1,16 @@
+int a;
+
 def int main()
 {
+    int i[9];
+    i[8] = true;
+}
+
+def int e(){
     int a;
 }
 
-def int main(){
+def int q(){
     int a;
+
 }
-
-
-

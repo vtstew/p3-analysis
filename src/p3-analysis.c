@@ -92,18 +92,8 @@ Symbol *lookup_symbol_with_reporting(NodeVisitor *visitor, ASTNode *node, const 
  */
 #define GET_INFERRED_TYPE(N) (DecafType) ASTNode_get_attribute(N, "type")
 
-/**
- * @brief previsit program node
- *
- * @param visitor
- * @param node
- */
-void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
+void find_ducplicat_helper(ASTNode *node)
 {
-    if (lookup_symbol(node, "main") == NULL)
-    {
-        Error_throw_printf("Program does not contain a 'main' function");
-    }
     SymbolTable *table = (SymbolTable *)ASTNode_get_attribute(node, "symbolTable");
     int count = 0;
     FOR_EACH(Symbol *, s1, table->local_symbols)
@@ -122,6 +112,21 @@ void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
             }
         }
     }
+}
+
+/**
+ * @brief previsit program node
+ *
+ * @param visitor
+ * @param node
+ */
+void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
+{
+    if (lookup_symbol(node, "main") == NULL)
+    {
+        Error_throw_printf("Program does not contain a 'main' function");
+    }
+    find_ducplicat_helper(node);
 }
 
 /**
@@ -190,6 +195,7 @@ void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_funcdecl(NodeVisitor *visitor, ASTNode *node)
 {
+    find_ducplicat_helper(node);
 }
 
 /**
@@ -210,6 +216,7 @@ void Analysis_previsit_block(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_block(NodeVisitor *visitor, ASTNode *node)
 {
+    find_ducplicat_helper(node);
 }
 
 /**
@@ -524,9 +531,14 @@ void Analysis_postvisit_location(NodeVisitor *visitor, ASTNode *node)
         Error_throw_printf("Expected valid var on line %d\n", node->source_line);
     }
 
+    // For array types
     if (sym != NULL && sym->symbol_type == 1 && node->location.index == NULL)
     {
         Error_throw_printf("Expected array index on line %d\n", node->source_line);
+    }
+    if (sym->symbol_type == 1 && GET_INFERRED_TYPE(node->location.index) != INT)
+    {
+        Error_throw_printf("Array index must be an integer on line %d\n", node->source_line);
     }
     // if (node->location.index->literal.integer < 0 || node->location.index->literal.integer >= sym->length)
     // {
@@ -556,6 +568,18 @@ void Analysis_previsit_funcall(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_funcall(NodeVisitor *visitor, ASTNode *node)
 {
+    Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
+
+    struct Paramater *expect_temp = sym->parameters->head;
+    struct Paramater *act_temp = node->funccall.arguments->head;
+    for (int i = 0; i < sym->parameters->size, i++)
+    {
+        // act_temp.
+        // if (expect_temp.type != act_temp->type)
+        // {
+        //     Error_throw_printf("Expected type %s but got type %s on line %d\n", GET_INFERRED_TYPE(expect_temp), GET_INFERRED_TYPE(act_temp), node->source_line);
+        // }
+    }
 }
 
 /**
@@ -581,6 +605,10 @@ void Analysis_postvisit_literal(NodeVisitor *visitor, ASTNode *node)
 
 ErrorList *analyze(ASTNode *tree)
 {
+    // if (tree == NULL)
+    // {
+    //     Error_throw_printf("Tree is NULL\n");
+    // }
     /* allocate analysis structures */
     NodeVisitor *v = NodeVisitor_new();
     v->data = (void *)AnalysisData_new();

@@ -570,15 +570,18 @@ void Analysis_postvisit_funcall(NodeVisitor *visitor, ASTNode *node)
 {
     Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
 
-    struct Paramater *expect_temp = sym->parameters->head;
-    struct Paramater *act_temp = node->funccall.arguments->head;
-    for (int i = 0; i < sym->parameters->size, i++)
+    if (sym->parameters->size != node->funccall.arguments->size) 
     {
-        // act_temp.
-        // if (expect_temp.type != act_temp->type)
-        // {
-        //     Error_throw_printf("Expected type %s but got type %s on line %d\n", GET_INFERRED_TYPE(expect_temp), GET_INFERRED_TYPE(act_temp), node->source_line);
-        // }
+        Error_throw_printf("Incorrect number of arguments, expected %d, but got %d on line %d\n", sym->parameters->size, node->funccall.arguments->size, node->source_line);
+    }
+    for (int i = 0; i < sym->parameters->size; i++)
+    {
+        if (sym->parameters->head->type != GET_INFERRED_TYPE(node->funccall.arguments->head))
+        {
+            Error_throw_printf("Expected type %s but got type %s on line %d\n", DecafType_to_string(sym->parameters->head->type), DecafType_to_string(GET_INFERRED_TYPE(node->funccall.arguments->head)), node->source_line);
+        }
+        sym->parameters->head = sym->parameters->head->next;
+        node->funccall.arguments->head = node->funccall.arguments->head->next;
     }
 }
 

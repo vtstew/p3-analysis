@@ -1,16 +1,16 @@
 int a;
 
+def int hi(int hi, int hi2)
+{
+    return 2;
+}
+
 def int main()
 {
     int i[9];
-    i[8] = true;
-}
-
-def int e(){
-    int a;
-}
-
-def int q(){
-    int a;
-
+    int j;
+    bool k;
+    j = 2;
+    k = true;
+    return hi(j);
 }

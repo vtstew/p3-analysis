@@ -525,31 +525,8 @@ void Analysis_previsit_unop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_postvisit_unop(NodeVisitor *visitor, ASTNode *node)
 {
-    DecafType actual_type;
+    DecafType actual_type = GET_INFERRED_TYPE(node->unaryop.child);
     DecafType inferred_type = GET_INFERRED_TYPE(node);
-    // check type of expression
-    switch (node->unaryop.child->type)
-    {
-    // binary expression
-    case 10:
-        // let recursion do its thing
-        break;
-    // unary expression
-    case 11:
-        // let recursion do its thing
-        break;
-    // literal
-    case 14:
-        actual_type = node->unaryop.child->literal.type;
-        break;
-    // location
-    case 12:
-        actual_type = lookup_symbol(node, node->unaryop.child->location.name)->type;
-        break;
-    default:
-        Error_throw_printf("Invalid unary expression on line %d\n", node->source_line);
-    }
-    // Error_throw_printf("\nhere\n");
     if (actual_type != inferred_type)
     {
         Error_throw_printf("Type mismatch expected %s was %s on line %d\n", DecafType_to_string(inferred_type), DecafType_to_string(actual_type), node->source_line);

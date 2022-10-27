@@ -4,6 +4,8 @@
 //
 def int main()
 {
-    return m;
+    if (-true + 3) {
+
+    }
 }
 

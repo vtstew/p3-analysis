@@ -2,8 +2,3 @@ def int main()
 {
     return 2;
 }
-
-def int hi()
-{
-    return a;
-}

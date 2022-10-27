@@ -1,4 +1,3 @@
 Running suite(s): Default
-84%: Checks: 13, Failures: 1, Errors: 1
-public.c:18:F:Public:C_assign:0: Assertion 'valid_program("def int main () { " "int i; i = 3; return 0;" " }")' failed
+92%: Checks: 13, Failures: 0, Errors: 1
 private.c:5:E:Private:A_null_tree:0: (after this point) Received signal 11 (Segmentation fault)

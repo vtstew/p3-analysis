@@ -510,6 +510,7 @@ void Analysis_postvisit_unop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
 {
+    // Error_throw_printf("%s\n", lookup_symbol(node, node->location.name)->name);
     if (lookup_symbol_with_reporting(visitor, node, node->location.name) != NULL)
     {
         SET_INFERRED_TYPE(lookup_symbol_with_reporting(visitor, node, node->location.name)->type);

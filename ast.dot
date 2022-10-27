@@ -7,7 +7,15 @@ digraph AST {
 3 -> 4;
 2 [shape=box, label="FuncDecl name='main'\ntype: int\nsymbolTable: \n  a : int"];
 2 -> 3;
-0 [shape=box, label="Program\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  main : (int) -> int\n  a : int"];
+9 [shape=box, label="Location name='a'\ntype: int"];
+8 [shape=box, label="Return"];
+8 -> 9;
+7 [shape=box, label="Block\nsymbolTable: (empty)"];
+7 -> 8;
+6 [shape=box, label="FuncDecl name='hi'\ntype: int\nsymbolTable: (empty)"];
+6 -> 7;
+0 [shape=box, label="Program\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  main : (int) -> int\n  hi : () -> int\n  a : int"];
 0 -> 1;
 0 -> 2;
+0 -> 6;
 }

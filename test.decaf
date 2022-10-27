@@ -1,6 +1,9 @@
-int a;
-
-def bool main(int a) 
+def int main(int a) 
 { 
     return 0; 
+}
+
+def int hi()
+{
+    return a;
 }

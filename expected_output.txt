@@ -1,0 +1,8 @@
+11
+Type mismatch: bool expected but int found on line 14
+Array 'counter' accessed without index on line 53
+Array 'counter' accessed without index on line 60
+Array 'counter' accessed without index on line 61
+Array 'counter' accessed without index on line 64
+Array 'counter' accessed without index on line 64
+Local variable 'counter' on line 51 cannot be an array

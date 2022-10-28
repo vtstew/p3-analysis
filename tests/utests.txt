@@ -1,3 +1,2 @@
 Running suite(s): Default
-92%: Checks: 13, Failures: 0, Errors: 1
-private.c:5:E:Private:A_null_tree:0: (after this point) Received signal 11 (Segmentation fault)
+100%: Checks: 13, Failures: 0, Errors: 0

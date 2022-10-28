@@ -1,0 +1,7 @@
+Invalid return type, Expected bool was int on line 14
+Local variable 'counter' on line 51 cannot be an array
+Expected array index on line 53
+Expected array index on line 60
+Expected array index on line 61
+Expected array index on line 64
+Expected array index on line 64

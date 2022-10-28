@@ -1,4 +1,4 @@
 def int main()
 {
-    return 2;
+    return a;
 }

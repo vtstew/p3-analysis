@@ -1,7 +1,7 @@
 // CS 432 PROJECT 0: DECAF PROGRAMMING
 // Katie Brasacchio
 
-def bool fact(int n)
+def int fact(int n)
 {
     int counter;
     counter = n - 1;
@@ -46,9 +46,8 @@ def int fib(int n)
 
 def bool is_prime(int n)
 {
-    // int counter;
+    int counter;
     bool answer;
-    int counter[6];
 
     counter = 2;
     answer = true;

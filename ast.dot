@@ -48,7 +48,7 @@ digraph AST {
 4 -> 6;
 4 -> 11;
 4 -> 26;
-3 [shape=box, label="FuncDecl name='fact'\ntype: bool\nsymbolTable: \n  n : int"];
+3 [shape=box, label="FuncDecl name='fact'\ntype: int\nsymbolTable: \n  n : int"];
 3 -> 4;
 30 [shape=box, label="VarDecl name='counter'\ntype: int"];
 31 [shape=box, label="VarDecl name='a'\ntype: int"];
@@ -159,8 +159,8 @@ digraph AST {
 29 -> 81;
 28 [shape=box, label="FuncDecl name='fib'\ntype: int\nsymbolTable: \n  n : int"];
 28 -> 29;
-85 [shape=box, label="VarDecl name='answer'\ntype: bool"];
-86 [shape=box, label="VarDecl name='counter'\ntype: int"];
+85 [shape=box, label="VarDecl name='counter'\ntype: int"];
+86 [shape=box, label="VarDecl name='answer'\ntype: bool"];
 88 [shape=box, label="Location name='counter'\ntype: int"];
 89 [shape=box, label="Literal value=2\ntype: int"];
 87 [shape=box, label="Assignment"];
@@ -234,7 +234,7 @@ digraph AST {
 125 [shape=box, label="Location name='answer'\ntype: bool"];
 124 [shape=box, label="Return"];
 124 -> 125;
-84 [shape=box, label="Block\nsymbolTable: \n  answer : bool\n  counter : int [6]"];
+84 [shape=box, label="Block\nsymbolTable: \n  counter : int\n  answer : bool"];
 84 -> 85;
 84 -> 86;
 84 -> 87;
@@ -669,7 +669,7 @@ digraph AST {
 340 [shape=box, label="Block\nsymbolTable: (empty)"];
 339 [shape=box, label="FuncDecl name='main'\ntype: int\nsymbolTable: (empty)"];
 339 -> 340;
-0 [shape=box, label="Program\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  fact : (int) -> bool\n  fib : (int) -> int\n  is_prime : (int) -> bool\n  gcd : (int, int) -> int\n  sum_nums : (int) -> int\n  sort_nums : (int) -> void\n  draw_triangle : (int) -> void\n  main : () -> int\n  nums : int [100]\n  lengths : int [100]"];
+0 [shape=box, label="Program\nsymbolTable: \n  print_int : (int) -> void\n  print_bool : (bool) -> void\n  print_str : (str) -> void\n  fact : (int) -> int\n  fib : (int) -> int\n  is_prime : (int) -> bool\n  gcd : (int, int) -> int\n  sum_nums : (int) -> int\n  sort_nums : (int) -> void\n  draw_triangle : (int) -> void\n  main : () -> int\n  nums : int [100]\n  lengths : int [100]"];
 0 -> 1;
 0 -> 2;
 0 -> 3;

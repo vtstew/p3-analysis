@@ -15,7 +15,6 @@ typedef struct AnalysisData
      */
     ErrorList *errors;
     bool is_loop;
-    bool is_return;
     bool is_block;
     bool is_func;
     DecafType funcdecl_return_type;
@@ -93,10 +92,18 @@ Symbol *lookup_symbol_with_reporting(NodeVisitor *visitor, ASTNode *node, const 
  */
 #define GET_INFERRED_TYPE(N) (DecafType) ASTNode_get_attribute(N, "type")
 
+/**
+ * @brief helper method for checking for duplicate symbols
+ *
+ * @param node
+ */
 void find_ducplicat_helper(ASTNode *node)
 {
+    // get the current symbol table
     SymbolTable *table = (SymbolTable *)ASTNode_get_attribute(node, "symbolTable");
     int count = 0;
+
+    // compare each item to every other item in the list to find duplicates
     FOR_EACH(Symbol *, s1, table->local_symbols)
     {
         count = 0;
@@ -106,6 +113,7 @@ void find_ducplicat_helper(ASTNode *node)
             {
                 count = count + 1;
 
+                // make sure it hasn't found itself
                 if (count > 1)
                 {
                     Error_throw_printf("Duplicate names %s\n", s1->name);
@@ -125,12 +133,15 @@ void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
 {
     if (node == NULL) {
         ErrorList_printf(ERROR_LIST, "NULL Tree");
+    // make sure there is a "main" function
     } else if (lookup_symbol(node, "main") == NULL)
     {
         ErrorList_printf(ERROR_LIST, "Program does not contain a 'main' function");
+    // make sure the thing called "main" is a function
     } else if (lookup_symbol(node, "main")->symbol_type != FUNCTION_SYMBOL)
     {
         ErrorList_printf(ERROR_LIST, "Program does not contain a 'main' function");
+    // check for multiple methods with the same name
     } else
     {
         find_ducplicat_helper(node);
@@ -147,8 +158,10 @@ void Analysis_postvisit_program(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // make sure the "main" method is not null
         if (lookup_symbol(node, "main") != NULL) 
         {
+            // make sure "main" returns an INT
             if (lookup_symbol(node, "main")->type != INT)
             {
                 ErrorList_printf(ERROR_LIST, "Program 'main' function must return an int");
@@ -181,14 +194,16 @@ void Analysis_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         DecafType type = GET_INFERRED_TYPE(node);
+        // variable cannot be VOID type
         if (type == VOID)
         {
             ErrorList_printf(ERROR_LIST, "Void variable '%s' on line %d", node->vardecl.name, node->source_line);
         } else
         {
-            // check for valid array size in declaration
+            // check for valid array size
             if (node->vardecl.is_array)
             {
+                // array declarations can only be global
                 if (DATA->is_block || DATA->is_func)
                 {
                     ErrorList_printf(ERROR_LIST, "Local variable '%s' on line %d cannot be an array", node->vardecl.name, node->source_line);
@@ -214,7 +229,9 @@ void Analysis_previsit_funcdecl(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         SET_INFERRED_TYPE(node->funcdecl.return_type);
+        // used to check that a function returns the correct type
         DATA->funcdecl_return_type = node->funcdecl.return_type;
+        // used to check if array declaration happens in a function
         DATA->is_func = true;
     }
 }
@@ -230,6 +247,7 @@ void Analysis_postvisit_funcdecl(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         DATA->is_func = false;
+        // check for duplicate variable declarations 
         find_ducplicat_helper(node);
     }
 }
@@ -244,6 +262,7 @@ void Analysis_previsit_block(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // used to check if array declarations happen in a block
         DATA->is_block = true;  
     }  
 }
@@ -259,6 +278,7 @@ void Analysis_postvisit_block(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         DATA->is_block = false;
+        // check for duplicate variable declarations in a block
         find_ducplicat_helper(node);
     }
 }
@@ -284,6 +304,7 @@ void Analysis_postvisit_assignment(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // get inferred types of left and right side fo assignment and make sure they're equal
         DecafType left_type = GET_INFERRED_TYPE(node->assignment.location);
         DecafType right_type = GET_INFERRED_TYPE(node->assignment.value);
         if (left_type != right_type)
@@ -314,6 +335,7 @@ void Analysis_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         DecafType cond_type = GET_INFERRED_TYPE(node->conditional.condition);
+        // the condition must evaluate to a boolean 
         if (cond_type != BOOL)
         {
             ErrorList_printf(ERROR_LIST, "Conditional type was %s, expected bool on line %d", DecafType_to_string(cond_type), node->source_line);
@@ -331,6 +353,7 @@ void Analysis_previsit_while_loop(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // used to check if break or continue happen inside a loop
         DATA->is_loop = true;
     }
 }
@@ -347,7 +370,7 @@ void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
     {
         DATA->is_loop = false;
         DecafType cond_type = GET_INFERRED_TYPE(node->whileloop.condition);
-
+        // condition must evaluate to a boolean
         if (cond_type != BOOL)
         {
             ErrorList_printf(ERROR_LIST, "Conditional type was %s, expected bool on line %d", DecafType_to_string(cond_type), node->source_line);
@@ -363,10 +386,6 @@ void Analysis_postvisit_while_loop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_return(NodeVisitor *visitor, ASTNode *node)
 {
-    if (node != NULL)
-    {
-        DATA->is_return = true;
-    }
 }
 
 /**
@@ -379,8 +398,7 @@ void Analysis_postvisit_return(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL && node->funcreturn.value != NULL)
     {
-        DATA->is_return = false;
-
+        // if the function returns a variable, make sure it has been declared
         if (node->funcreturn.value->type == LOCATION)
         {
             if (lookup_symbol(node, node->funcreturn.value->location.name) == NULL)
@@ -389,6 +407,7 @@ void Analysis_postvisit_return(NodeVisitor *visitor, ASTNode *node)
             }
         }
 
+        // check that the function returns the correct type
         DecafType infer_return_value = GET_INFERRED_TYPE(node->funcreturn.value);
         if (infer_return_value != 0)
         {
@@ -410,6 +429,7 @@ void Analysis_previsit_break(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // make sure breaks only happen inside a loop
         if (!DATA->is_loop)
         {
             ErrorList_printf(ERROR_LIST, "Break statement should be inside a while loop.");
@@ -437,6 +457,7 @@ void Analysis_previsit_continue(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // make sure continues only happen inside a loop
         if (!DATA->is_loop)
         {
             Error_throw_printf("Continue statement should be inside a while loop.");
@@ -465,23 +486,14 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         BinaryOpType binop_type = node->binaryop.operator;
-        // for >, >=, <, <=, +, -, *, /, %
-        if ((binop_type > 3) && (binop_type < 13))
-        {
-            // set inferred type
-            if (binop_type > 7 && binop_type < 13)
-            {
-                SET_INFERRED_TYPE(INT);
-            }
-            else
-            {
-                SET_INFERRED_TYPE(BOOL);
-            }
-            // == and !=
-        }
-        else if ((binop_type == 2) || (binop_type == 3) || (binop_type == 0) || (binop_type == 1))
+        // expressions with ||, &&, ==, !=, <, <=, >=, > evaluate to BOOL
+        if (binop_type >= 0 && binop_type < 8)
         {
             SET_INFERRED_TYPE(BOOL);
+        // expressions with +, -, *, /, % evaluate to INT
+        } else 
+        {
+            SET_INFERRED_TYPE(INT);
         }
     }
 }
@@ -506,10 +518,11 @@ void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // get operater and inferred type of left and right side of the expression
         BinaryOpType binop_type = node->binaryop.operator;
         DecafType left_type = GET_INFERRED_TYPE(node->binaryop.left);
         DecafType right_type = GET_INFERRED_TYPE(node->binaryop.right);
-        // for >, >=, <, <=, +, -, *, /, %
+        // expressions with <, <=, >=, >, +, -, *, /, % both sides must be INT
         if ((binop_type > 3) && (binop_type < 13))
         {
             if (left_type != INT || right_type != INT)
@@ -518,8 +531,8 @@ void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
                 return;
             }
 
-            // == and !=
         }
+        // expressions with == and != must have the same type on both sides
         else if ((binop_type == 2) || (binop_type == 3))
         {
             if (left_type != right_type)
@@ -528,7 +541,7 @@ void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
                 return;
             }
         }
-        // || and &&
+        // expressions with || and && must be BOOL on both side
         else if ((binop_type == 0) || (binop_type == 1))
         {
             if (left_type != BOOL || right_type != BOOL)
@@ -551,10 +564,12 @@ void Analysis_previsit_unop(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL) 
     {
         UnaryOpType unop = node->unaryop.operator;
+        // - operator evaluates to INT
         if (unop == 0)
         {
             SET_INFERRED_TYPE(INT);
         }
+        // ! evaluates to BOOL
         else
         {
             SET_INFERRED_TYPE(BOOL);
@@ -572,6 +587,7 @@ void Analysis_postvisit_unop(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // make sure inferred type of the child is correct
         DecafType actual_type = GET_INFERRED_TYPE(node->unaryop.child);
         DecafType inferred_type = GET_INFERRED_TYPE(node);
         if (actual_type != inferred_type)
@@ -592,16 +608,12 @@ void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // make sure variable exists in symbol table
         Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->location.name);
         if (sym != NULL)
         {
             SET_INFERRED_TYPE(sym->type);
         } 
-        // else 
-        // {
-        //     ErrorList_printf(ERROR_LIST, "Symbol '%s' undefined on line %d", node->location.name, node->source_line);
-        //     return;
-        // }
     }
 }
 
@@ -616,16 +628,17 @@ void Analysis_postvisit_location(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         Symbol *sym = lookup_symbol(node, node->location.name);
-        // Error_throw_printf("\n here \n");
+        // check again if variable exists in symbol table
         if (sym != NULL)
         {
-            // For array types
-            if (sym != NULL && sym->symbol_type == 1 && node->location.index == NULL)
+            // check for array location with no index
+            if (sym->symbol_type == ARRAY_SYMBOL && node->location.index == NULL)
             {
                 ErrorList_printf(ERROR_LIST, "Expected array index on line %d", node->source_line);
                 return;
             }
-            if (sym->symbol_type == 1 && GET_INFERRED_TYPE(node->location.index) != INT)
+            // check for array location with index that is not an INT
+            if (sym->symbol_type == ARRAY_SYMBOL && GET_INFERRED_TYPE(node->location.index) != INT)
             {
                 ErrorList_printf(ERROR_LIST, "Array index must be an integer on line %d", node->source_line);
                 return;
@@ -644,6 +657,7 @@ void Analysis_previsit_funcall(NodeVisitor *visitor, ASTNode *node)
 {
     if (node != NULL)
     {
+        // make sure function exists in symbol table
         Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name); 
         if (sym != NULL)
         {
@@ -663,14 +677,18 @@ void Analysis_postvisit_funcall(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
+        // check again that function exists in symbol table
         if (sym != NULL)
         {
+            // temporarily store head of parameter list
             struct Parameter *head = sym->parameters->head;
+            // make sure there is the correct number of arguments
             if (sym->parameters->size != node->funccall.arguments->size)
             {
                 ErrorList_printf(ERROR_LIST, "Incorrect number of arguments, expected %d, but got %d on line %d", sym->parameters->size, node->funccall.arguments->size, node->source_line);
                 return;
             }
+            // go through each parameter and make sure arguments are correct types
             for (int i = 0; i < sym->parameters->size; i++)
             {
                 if (sym->parameters->head->type != GET_INFERRED_TYPE(node->funccall.arguments->head))
@@ -678,9 +696,12 @@ void Analysis_postvisit_funcall(NodeVisitor *visitor, ASTNode *node)
                     ErrorList_printf(ERROR_LIST, "Expected type %s but got type %s on line %d", DecafType_to_string(sym->parameters->head->type), DecafType_to_string(GET_INFERRED_TYPE(node->funccall.arguments->head)), node->source_line);
                     return;
                 }
+                // move head to the next parameter
                 sym->parameters->head = sym->parameters->head->next;
+                // move head to the next argument
                 node->funccall.arguments->head = node->funccall.arguments->head->next;
             }
+            // set the head back
             sym->parameters->head = head;
         }
     }
@@ -717,6 +738,7 @@ ErrorList *analyze(ASTNode *tree)
     v->data = (void *)AnalysisData_new();
     v->dtor = (Destructor)AnalysisData_free;
 
+    // check if tree is null, if so create an error list and return
     if (tree == NULL)
     {
         ErrorList *errors = ((AnalysisData *)v->data)->errors;

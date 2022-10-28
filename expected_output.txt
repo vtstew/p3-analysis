@@ -1,8 +1,143 @@
 11
-Type mismatch: bool expected but int found on line 14
-Array 'counter' accessed without index on line 53
-Array 'counter' accessed without index on line 60
-Array 'counter' accessed without index on line 61
-Array 'counter' accessed without index on line 64
-Array 'counter' accessed without index on line 64
-Local variable 'counter' on line 51 cannot be an array
+Program [line 1]
+SYM TABLE:
+ print_int : (int) -> void
+ print_bool : (bool) -> void
+ print_str : (str) -> void
+ fact : (int) -> int
+ fib : (int) -> int
+ is_prime : (int) -> bool
+ gcd : (int, int) -> int
+ sum_nums : (int) -> int
+ sort_nums : (int) -> void
+ draw_triangle : (int) -> void
+ main : () -> int
+ nums : int [100]
+ lengths : int [100]
+
+  FuncDecl name="fact" return_type=int parameters={n:int} [line 4]
+  SYM TABLE:
+   n : int
+
+    Block [line 5]
+    SYM TABLE:
+     counter : int
+
+        Block [line 9]
+        SYM TABLE:
+
+  FuncDecl name="fib" return_type=int parameters={n:int} [line 17]
+  SYM TABLE:
+   n : int
+
+    Block [line 18]
+    SYM TABLE:
+     counter : int
+     a : int
+     b : int
+     c : int
+
+        Block [line 29]
+        SYM TABLE:
+
+        Block [line 33]
+        SYM TABLE:
+
+        Block [line 37]
+        SYM TABLE:
+
+  FuncDecl name="is_prime" return_type=bool parameters={n:int} [line 47]
+  SYM TABLE:
+   n : int
+
+    Block [line 48]
+    SYM TABLE:
+     counter : int
+     answer : bool
+
+        Block [line 55]
+        SYM TABLE:
+
+        Block [line 59]
+        SYM TABLE:
+
+            Block [line 60]
+            SYM TABLE:
+
+  FuncDecl name="gcd" return_type=int parameters={a:int,b:int} [line 69]
+  SYM TABLE:
+   a : int
+   b : int
+
+    Block [line 70]
+    SYM TABLE:
+     answer : int
+     counter : int
+
+        Block [line 77]
+        SYM TABLE:
+         temp : int
+
+            Block [line 80]
+            SYM TABLE:
+
+                Block [line 82]
+                SYM TABLE:
+
+  FuncDecl name="sum_nums" return_type=int parameters={len:int} [line 94]
+  SYM TABLE:
+   len : int
+
+    Block [line 95]
+    SYM TABLE:
+     counter : int
+     sum : int
+
+        Block [line 102]
+        SYM TABLE:
+
+  FuncDecl name="sort_nums" return_type=void parameters={len:int} [line 110]
+  SYM TABLE:
+   len : int
+
+    Block [line 111]
+    SYM TABLE:
+     counter : int
+     curr : int
+     j : int
+
+        Block [line 121]
+        SYM TABLE:
+
+            Block [line 126]
+            SYM TABLE:
+
+  FuncDecl name="draw_triangle" return_type=void parameters={base:int} [line 138]
+  SYM TABLE:
+   base : int
+
+    Block [line 139]
+    SYM TABLE:
+     counter : int
+     temp_counter : int
+     length : int
+
+        Block [line 148]
+        SYM TABLE:
+
+        Block [line 158]
+        SYM TABLE:
+
+            Block [line 162]
+            SYM TABLE:
+
+            Block [line 168]
+            SYM TABLE:
+
+  FuncDecl name="main" return_type=int parameters={} [line 178]
+  SYM TABLE:
+
+    Block [line 179]
+    SYM TABLE:
+
+RETURN VALUE = -9999999

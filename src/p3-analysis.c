@@ -131,18 +131,27 @@ void find_ducplicat_helper(ASTNode *node)
  */
 void Analysis_previsit_program(NodeVisitor *visitor, ASTNode *node)
 {
-    if (node == NULL) {
+    if (node == NULL)
+    {
         ErrorList_printf(ERROR_LIST, "NULL Tree");
+    }
     // make sure there is a "main" function
-    } else if (lookup_symbol(node, "main") == NULL)
+    else if (lookup_symbol(node, "main") == NULL)
     {
         ErrorList_printf(ERROR_LIST, "Program does not contain a 'main' function");
+    }
     // make sure the thing called "main" is a function
-    } else if (lookup_symbol(node, "main")->symbol_type != FUNCTION_SYMBOL)
+    else if (lookup_symbol(node, "main")->symbol_type != FUNCTION_SYMBOL)
     {
         ErrorList_printf(ERROR_LIST, "Program does not contain a 'main' function");
+    }
+    // check for no paramaters in the main method
+    else if (lookup_symbol(node, "main")->parameters->size > 0)
+    {
+        ErrorList_printf(ERROR_LIST, "'main' must take no parameters");
+    }
     // check for multiple methods with the same name
-    } else
+    else
     {
         find_ducplicat_helper(node);
     }
@@ -159,7 +168,7 @@ void Analysis_postvisit_program(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         // make sure the "main" method is not null
-        if (lookup_symbol(node, "main") != NULL) 
+        if (lookup_symbol(node, "main") != NULL)
         {
             // make sure "main" returns an INT
             if (lookup_symbol(node, "main")->type != INT)
@@ -178,7 +187,8 @@ void Analysis_postvisit_program(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_vardecl(NodeVisitor *visitor, ASTNode *node)
 {
-    if (node != NULL){
+    if (node != NULL)
+    {
         SET_INFERRED_TYPE(node->vardecl.type);
     }
 }
@@ -198,7 +208,8 @@ void Analysis_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
         if (type == VOID)
         {
             ErrorList_printf(ERROR_LIST, "Void variable '%s' on line %d", node->vardecl.name, node->source_line);
-        } else
+        }
+        else
         {
             // check for valid array size
             if (node->vardecl.is_array)
@@ -214,7 +225,7 @@ void Analysis_postvisit_vardecl(NodeVisitor *visitor, ASTNode *node)
                     ErrorList_printf(ERROR_LIST, "Array length must be greater than 0");
                 }
             }
-        }  
+        }
     }
 }
 
@@ -247,7 +258,7 @@ void Analysis_postvisit_funcdecl(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         DATA->is_func = false;
-        // check for duplicate variable declarations 
+        // check for duplicate variable declarations
         find_ducplicat_helper(node);
     }
 }
@@ -263,8 +274,8 @@ void Analysis_previsit_block(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         // used to check if array declarations happen in a block
-        DATA->is_block = true;  
-    }  
+        DATA->is_block = true;
+    }
 }
 
 /**
@@ -335,7 +346,7 @@ void Analysis_postvisit_conditional(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         DecafType cond_type = GET_INFERRED_TYPE(node->conditional.condition);
-        // the condition must evaluate to a boolean 
+        // the condition must evaluate to a boolean
         if (cond_type != BOOL)
         {
             ErrorList_printf(ERROR_LIST, "Conditional type was %s, expected bool on line %d", DecafType_to_string(cond_type), node->source_line);
@@ -490,8 +501,9 @@ void Analysis_previsit_binop(NodeVisitor *visitor, ASTNode *node)
         if (binop_type >= 0 && binop_type < 8)
         {
             SET_INFERRED_TYPE(BOOL);
-        // expressions with +, -, *, /, % evaluate to INT
-        } else 
+            // expressions with +, -, *, /, % evaluate to INT
+        }
+        else
         {
             SET_INFERRED_TYPE(INT);
         }
@@ -530,7 +542,6 @@ void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
                 ErrorList_printf(ERROR_LIST, "Cannot use operator %s on type %s and %s on line %d", BinaryOpToString(binop_type), DecafType_to_string(left_type), DecafType_to_string(right_type), node->source_line);
                 return;
             }
-
         }
         // expressions with == and != must have the same type on both sides
         else if ((binop_type == 2) || (binop_type == 3))
@@ -561,7 +572,7 @@ void Analysis_postvisit_binop(NodeVisitor *visitor, ASTNode *node)
  */
 void Analysis_previsit_unop(NodeVisitor *visitor, ASTNode *node)
 {
-    if (node != NULL) 
+    if (node != NULL)
     {
         UnaryOpType unop = node->unaryop.operator;
         // - operator evaluates to INT
@@ -613,7 +624,7 @@ void Analysis_previsit_location(NodeVisitor *visitor, ASTNode *node)
         if (sym != NULL)
         {
             SET_INFERRED_TYPE(sym->type);
-        } 
+        }
     }
 }
 
@@ -658,7 +669,7 @@ void Analysis_previsit_funcall(NodeVisitor *visitor, ASTNode *node)
     if (node != NULL)
     {
         // make sure function exists in symbol table
-        Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name); 
+        Symbol *sym = lookup_symbol_with_reporting(visitor, node, node->funccall.name);
         if (sym != NULL)
         {
             SET_INFERRED_TYPE(sym->type);

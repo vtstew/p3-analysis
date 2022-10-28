@@ -4,10 +4,7 @@ def int main()
     int i;
 }
 
-def bool foo (int i, bool a){
-    int a;
-    if (true == a){
-
-    }
+def bool main (int i, bool a){
+    
 }
 

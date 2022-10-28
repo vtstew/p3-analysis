@@ -109,7 +109,7 @@ void find_ducplicat_helper(ASTNode *node)
         count = 0;
         FOR_EACH(Symbol *, s2, table->local_symbols)
         {
-            if (strcmp(s1->name, s2->name) == 0)
+            if (strncmp(s1->name, s2->name, 30) == 0)
             {
                 count = count + 1;
 
